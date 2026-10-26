@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://backhere-rainy.ssboroostore.chatgpt.site/sitemap.xml

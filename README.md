@@ -130,3 +130,16 @@ v0.2 нь туршиж ашиглах desktop хувилбар. Доорхийг
 UI screenshots: ногоон Actions run-ийн **BackHere-UI-x64 / x86** artifact. Зураг дахь жишээнүүд нь зөвхөн CI-ийн тусгаарласан туршилтын өгөгдөл; хэрэглэгчийн программд автоматаар нэмэгдэхгүй.
 
 Шалгалт: хоёр theme-ийн үндсэн текст/button contrast ≥4.5:1, 12 хэлээр UI нээх, theme солих, нарийн/өргөн layout, dialog-оос хадгалах, packaged EXE/installer. Энэ нь бүрэн accessibility certification биш; NVDA/JAWS болон high-contrast Windows горимын хараат бус аудит үлдэнэ.
+
+## Олон нийтэд нээлттэй бүтээгдэхүүний сайт
+
+**https://backhere-rainy.ssboroostore.chatgpt.site/**
+
+- Монгол / Англи танилцуулга, бодит аппын зураг, theme preview, FAQ, privacy.
+- Нийтийн GitHub Release v0.4.0-оос x64/x86 суулгагч, portable ZIP, SHA256 болон brand kit татна.
+- Вебийн 375 px болон desktop layout, хэл солих, зураг ачаалах болон checksum таталтыг браузераар шалгасан.
+- Windows release workflow: `40325237474`, хоёр архитектур болон release publication амжилттай.
+- Том EXE/ZIP таталтын browser completion event-ийг cloud browser-оос баталгаажуулж чадаагүй. Файлуудын release metadata, checksum болон Windows install/run/uninstall CI шалгалт баталгаажсан.
+- Publisher signing, автомат binary updater, төлбөр/лицензийн систем одоогоор байхгүй; жинхэнэ 32-bit төхөөрөмжийн тусдаа QA үлдэнэ.
+
+![Published BackHere website](website/preview.jpg)

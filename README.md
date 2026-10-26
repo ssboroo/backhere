@@ -143,3 +143,15 @@ UI screenshots: ногоон Actions run-ийн **BackHere-UI-x64 / x86** artifa
 - Publisher signing, автомат binary updater, төлбөр/лицензийн систем одоогоор байхгүй; жинхэнэ 32-bit төхөөрөмжийн тусдаа QA үлдэнэ.
 
 ![Published BackHere website](website/preview.jpg)
+
+## Workspace sessions (0.5.0)
+
+Open **Workspaces**, name your current work, and select **Save current workspace**. Review the captured windows before restoring. Choose individual windows and inspect the result log. Optional auto-save runs every five minutes while BackHere is running and retains the latest 20 automatic snapshots. It is disabled by default.
+
+Capture includes top-level application windows and monitor-aware layout; Explorer folders and saved Word/Excel documents where available; visible browser URLs where accessible. A closed app reopens from its executable without replaying arbitrary command lines. Unsupported/packaged/privileged apps may need manual reopening. Existing matching windows keep their present document/tab content. Repeated browser restoration can create duplicate tabs/windows.
+
+For complete browser tab lists, download **BackHere-Browser-Companion-0.5.0.zip** from Releases and follow its README. Export your tabs locally, capture that browser in a desktop workspace, then select **Import browser tabs**. The companion can also restore its JSON directly, including pinned/active flags. Private/internal pages, form data and history are excluded. Up to 64 browser windows and 200 tabs per window are supported.
+
+**Workspace snapshots are not process-memory snapshots.** They cannot recover arbitrary unsaved app data, exact cursor/cell positions, terminal processes, browser forms, or internal app state. Use the separately confirmed **Hibernate Windows** action to continue the current Windows memory session when Windows supports it; this powers down the computer. Hibernate cannot provide independently selectable historical RAM sessions. BackHere never closes existing apps or forces documents to save.
+
+Workspace snapshots/backups contain plain-text application paths, document names and URLs. JSON imports strip machine-specific window identities. New workspace UI explanations support Mongolian/English; the other existing locales currently fall back to English for this feature.

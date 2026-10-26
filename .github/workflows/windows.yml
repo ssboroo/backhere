@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'desktop/**'
+      - 'browser-companion/**'
       - 'tests/**'
       - 'scripts/**'
       - 'brand/**'
@@ -37,6 +38,10 @@ jobs:
         run: |
           python -m compileall -q desktop tests
           python -m unittest discover -s tests -v
+      - name: Browser companion validation
+        run: node --test tests/browser-model.test.cjs
+      - name: Package browser companion
+        run: python scripts/package-companion.py
       - name: Desktop UI integration test
         env:
           UI_SCREENSHOTS: ui-screenshots
@@ -102,6 +107,12 @@ jobs:
         with:
           name: BackHere-Brand-Kit
           path: build-resources/BackHere-Brand-Kit-*.zip
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: matrix.architecture == 'x64'
+        with:
+          name: BackHere-Browser-Companion
+          path: build-resources/BackHere-Browser-Companion-*.zip
           if-no-files-found: error
   release:
     name: Publish tested Windows release

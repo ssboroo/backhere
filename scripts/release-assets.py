@@ -22,6 +22,8 @@ for architecture in ('x64','x86'):
         archive.writestr('README.txt',f'BackHere {version} / Windows {architecture}\nRun BackHere.exe. No Python required.\nData: %LOCALAPPDATA%\\BackHere\nhttps://github.com/ssboroo/backhere\n')
 brand=next((artifacts/'BackHere-Brand-Kit').rglob('*.zip'))
 shutil.copyfile(brand,output/brand.name)
+companion=next((artifacts/'BackHere-Browser-Companion').rglob('*.zip'))
+shutil.copyfile(companion,output/companion.name)
 for image in (artifacts/'BackHere-UI-x64').rglob('*.png'):
     shutil.copyfile(image,output/image.name)
 lines=[hashlib.sha256(path.read_bytes()).hexdigest()+'  '+path.name for path in sorted(output.iterdir()) if path.is_file() and path.name!='SHA256SUMS.txt']

@@ -50,6 +50,15 @@ with tempfile.TemporaryDirectory() as folder, ExitStack() as cleanup:
     app.apply_layout(980);assert app.compact
     root.geometry('1240x790');root.update();app.update_layout()
     assert app.compact==(root.winfo_width()/root._get_window_scaling()<1130)
+    from session_model import new_snapshot
+    fixture=dict(id='demo-window',title='Research — browser workspace',exe=r'C:\Program Files\Google\Chrome\Application\chrome.exe',app='chrome.exe',target='https://example.com/research',position='',kind='browser',show=1,rect=[100,100,900,700],hwnd=0,pid=0,started=0,unsaved=False,tabs=[dict(url='https://example.com/research',title='Research',active=True,pinned=False)])
+    saved_workspace=new_snapshot('Research workspace',[fixture],machine='Demo PC')
+    app.store.sessions.save(saved_workspace)
+    for code in ('en','mn'):
+        app.lang=code;app.show_sessions();root.update()
+        assert app.session_selected==saved_workspace['id']
+        assert len(app.session_checks)==1
+        app.close_sessions();root.update()
     assert not errors,errors
     # Screenshots use synthetic fixtures in this disposable profile, never real user files.
     if os.environ.get('UI_SCREENSHOTS'):
@@ -79,6 +88,11 @@ with tempfile.TemporaryDirectory() as folder, ExitStack() as cleanup:
         app.lang='mn';app.build();root.update()
         x,y=root.winfo_rootx(),root.winfo_rooty()
         ImageGrab.grab(bbox=(x,y,x+root.winfo_width(),y+root.winfo_height())).save(destination/'backhere-mongolian.png')
+    app.lang='en';app.show_sessions();root.update()
+    if os.environ.get('UI_SCREENSHOTS'):
+        w=app.session_window;x,y=w.winfo_rootx(),w.winfo_rooty()
+        ImageGrab.grab(bbox=(x,y,x+w.winfo_width(),y+w.winfo_height())).save(destination/'backhere-workspaces.png')
+    app.close_sessions();root.update()
     if os.name=='nt':
         from tray import Tray
         tray=Tray(queue.Queue(),{k:app.t(k) for k in ('show','new','exit')})

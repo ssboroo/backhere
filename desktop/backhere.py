@@ -13,6 +13,7 @@ import threading
 import tkinter as tk
 import customtkinter as ctk
 from views import WorkspaceView
+from session_views import SessionView
 from design import color
 from datetime import datetime
 from pathlib import Path
@@ -20,9 +21,9 @@ from tkinter import filedialog, messagebox
 from core import Store, open_target
 from windows import Hotkey, capture_target, parse_hotkey, set_startup, startup_enabled, SingleInstance, ShowSignal, signal_existing
 
-VERSION = "0.4.0"
+VERSION = "0.5.0"
 
-class App(WorkspaceView):
+class App(WorkspaceView, SessionView):
     def __init__(self, root, testing=False):
         self.version = VERSION
         self.root = root
@@ -30,6 +31,9 @@ class App(WorkspaceView):
         self.closing = False
         self.tray = None
         self.capture_pending = False
+        self.workspace_capture_busy = False
+        self.workspace_restore_busy = False
+        self.workspace_cancel = threading.Event()
         self.show_signal = ShowSignal() if not testing else None
         self.root.title('BackHere')
         scale = root._get_window_scaling()
@@ -79,6 +83,7 @@ class App(WorkspaceView):
         if self.backup_error:
             self.status.configure(text=self.t('error')+' — '+self.t('backups'))
         root.after(60000, self.periodic_backup)
+        root.after(300000, self.auto_capture_session)
 
     def t(self, key):
         try:
@@ -210,7 +215,9 @@ class App(WorkspaceView):
                 kind, value = self.events.get_nowait()
             except queue.Empty:
                 break
-            if kind == 'capture' and not self.capture_pending:
+            if kind.startswith('workspace_'):
+                self.handle_workspace_event(kind,value)
+            elif kind == 'capture' and not self.capture_pending:
                 self.capture_pending = True
                 def resolve(source=value):
                     source.update(capture_target(source))
@@ -246,6 +253,7 @@ class App(WorkspaceView):
         if self.closing:
             return
         self.closing = True
+        self.workspace_cancel.set()
         if self.hotkey:
             self.hotkey.stop()
         if self.tray:
@@ -281,6 +289,11 @@ def self_test(output):
         fields = app.edit_selected()
         root.update()
         app.dialog.destroy()
+        from session_model import new_snapshot
+        snapshot = new_snapshot('Packaged workspace test', [])
+        app.store.sessions.save(snapshot)
+        app.show_sessions(); root.update(); app.close_sessions()
+        assert app.store.sessions.get(snapshot['id'])['name'] == snapshot['name']
         app.store.export(Path(folder) / 'export.json')
         app.store.daily_backup(Path(folder) / 'snapshots')
         count = len(app.store.all())

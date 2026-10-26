@@ -50,6 +50,7 @@ class WorkspaceView:
             b=Button(row,kind='ghost',symbol=symbol,text=self.t(key),height=40,anchor='w',command=lambda k=key:self.set_filter(k))
             b.pack(fill='x')
             self.nav_buttons[key]=b
+        Button(nav,kind='ghost',symbol='folder',text=self.t('sessions'),height=40,anchor='w',command=self.show_sessions).pack(fill='x',pady=3)
         self.text(self.sidebar,self.t('projects'),11,'muted',anchor='w').grid(row=3,column=0,sticky='ew',padx=24,pady=(22,6))
         self.project_container=ctk.CTkFrame(self.sidebar,fg_color='transparent',height=120)
         self.project_container.grid(row=4,column=0,sticky='ew',padx=12)
@@ -128,7 +129,7 @@ class WorkspaceView:
         # Logical rather than physical pixels keeps the breakpoint correct at 125/150% DPI.
         scale=self.root._get_window_scaling()
         logical_width=self.root.winfo_width()/scale
-        self.project_container.configure(height=60 if self.root.winfo_height()/scale<650 else 120)
+        self.project_container.configure(height=32 if self.root.winfo_height()/scale<650 else 96)
         self.apply_layout(logical_width)
 
     def apply_layout(self,logical_width):

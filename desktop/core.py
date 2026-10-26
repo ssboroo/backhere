@@ -49,6 +49,8 @@ class Store:
         self.db.execute('PRAGMA journal_mode=WAL')
         self.db.execute('CREATE TABLE IF NOT EXISTS spots (id TEXT PRIMARY KEY, title TEXT NOT NULL, target TEXT NOT NULL, note TEXT NOT NULL, project TEXT NOT NULL, position TEXT NOT NULL, created REAL NOT NULL, done INTEGER NOT NULL, pinned INTEGER NOT NULL)')
         self.db.execute('CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)')
+        from session_model import SessionStore
+        self.sessions = SessionStore(self.db)
         self.db.commit()
 
     def setting(self, key, default=None):
@@ -100,23 +102,29 @@ class Store:
         # Atomic output avoids leaving a partial backup after interruption.
         output = Path(path)
         temporary = output.with_suffix(output.suffix + '.tmp')
-        temporary.write_text(json.dumps({'version': 1, 'items': self.all()}, ensure_ascii=False, indent=2), encoding='utf-8')
+        temporary.write_text(json.dumps({'version': 2, 'items': self.all(), 'sessions': self.sessions.all()}, ensure_ascii=False, indent=2), encoding='utf-8')
         temporary.replace(output)
 
     def import_backup(self, path):
         if Path(path).stat().st_size > 10_000_000:
             raise ValueError('Backup too large')
         data = json.loads(Path(path).read_text(encoding='utf-8'))
-        if not isinstance(data, dict) or data.get('version') != 1 or not isinstance(data.get('items'), list) or len(data['items']) > 10000:
+        if not isinstance(data, dict) or data.get('version') not in (1, 2) or not isinstance(data.get('items'), list) or len(data['items']) > 10000:
             raise ValueError('Invalid backup')
         for item in data['items']:
             if not isinstance(item, dict):
                 raise ValueError('Invalid item')
             self.validate(item)
+        from session_model import imported_snapshot
+        sessions=data.get('sessions',[]) if data['version']==2 else []
+        if not isinstance(sessions,list) or len(sessions)>200:raise ValueError('Invalid workspace backup')
+        sessions=[imported_snapshot(s) for s in sessions]
         before = self.db.total_changes
         with self.db:
             for item in data['items']:
                 self.db.execute('INSERT OR IGNORE INTO spots VALUES (:id,:title,:target,:note,:project,:position,:created,:done,:pinned)', item)
+            for session in sessions:
+                self.db.execute('INSERT OR IGNORE INTO sessions VALUES (?,?,?,?)',(session['id'],session['name'],session['created'],json.dumps(session,ensure_ascii=False)))
         return self.db.total_changes - before
 
     def close(self):
@@ -152,6 +160,12 @@ class Store:
                 raise ValueError('Invalid snapshot')
             source.row_factory = sqlite3.Row
             records = [dict(r) for r in source.execute('SELECT id,title,target,note,project,position,created,done,pinned FROM spots LIMIT 10001')]
+            sessions=None
+            if source.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='sessions'").fetchone():
+                sessions=[json.loads(r[0]) for r in source.execute('SELECT payload FROM sessions LIMIT 201')]
+                if len(sessions)>200:raise ValueError('Too many workspaces')
+                from session_model import validate_snapshot
+                for session in sessions:validate_snapshot(session)
         if len(records) > 10000:
             raise ValueError('Snapshot too large')
         for record in records:
@@ -163,3 +177,7 @@ class Store:
             self.db.execute('DELETE FROM spots')
             for record in records:
                 self.db.execute('INSERT INTO spots VALUES (:id,:title,:target,:note,:project,:position,:created,:done,:pinned)', record)
+            if sessions is not None:
+                self.db.execute('DELETE FROM sessions')
+                for session in sessions:
+                    self.db.execute('INSERT INTO sessions VALUES (?,?,?,?)',(session['id'],session['name'],session['created'],json.dumps(session,ensure_ascii=False)))

@@ -2,6 +2,15 @@ name: Windows desktop build
 on:
   push:
     branches: [main]
+    paths:
+      - 'desktop/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'brand/**'
+      - 'requirements*.txt'
+      - 'installer.iss'
+      - 'RELEASE_NOTES.md'
+      - '.github/workflows/windows.yml'
   pull_request:
   workflow_dispatch:
 permissions:
@@ -88,3 +97,36 @@ jobs:
           name: BackHere-UI-${{ matrix.architecture }}
           path: ui-screenshots/*.png
           if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: matrix.architecture == 'x64'
+        with:
+          name: BackHere-Brand-Kit
+          path: build-resources/BackHere-Brand-Kit-*.zip
+          if-no-files-found: error
+  release:
+    name: Publish tested Windows release
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: windows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+      - name: Stage release files
+        id: version
+        run: echo "version=$(python scripts/release-assets.py release-artifacts public-release)" >> "$GITHUB_OUTPUT"
+      - name: Publish immutable release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          tag="v$RELEASE_VERSION"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo 'This version already exists. Bump VERSION and installer version for a new release.'
+            exit 1
+          fi
+          gh release create "$tag" public-release/* --target "$GITHUB_SHA" --title "BackHere $RELEASE_VERSION — Windows x64 & x86" --notes-file RELEASE_NOTES.md

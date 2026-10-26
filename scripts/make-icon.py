@@ -1,10 +1,17 @@
 from pathlib import Path
-from PIL import Image, ImageDraw
-output = Path('build-resources')
+import sys
+from zipfile import ZipFile, ZIP_DEFLATED
+root=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(root/'desktop'))
+from brand import draw_brand
+output=root/'build-resources'
 output.mkdir(exist_ok=True)
-image = Image.new('RGBA', (256, 256), (0, 0, 0, 0))
-draw = ImageDraw.Draw(image)
-draw.rounded_rectangle((8, 8, 248, 248), radius=64, fill='#486342')
-draw.arc((64, 68, 192, 196), 40, 300, fill='white', width=20)
-draw.polygon([(48, 72), (112, 68), (68, 124)], fill='white')
-image.save(output / 'backhere.ico', sizes=[(16,16),(24,24),(32,32),(48,48),(64,64),(128,128),(256,256)])
+image=draw_brand(1024)
+image.save(output/'backhere.ico',sizes=[(16,16),(24,24),(32,32),(48,48),(64,64),(128,128),(256,256)])
+image.save(output/'backhere-mark.png')
+draw_brand(1024,'#A3DBB4','#132C1D').save(output/'backhere-mark-dark.png')
+with ZipFile(output/'BackHere-Brand-Kit-0.4.0.zip','w',ZIP_DEFLATED) as archive:
+    for source in sorted((root/'brand').iterdir()):
+        if source.is_file():archive.write(source,source.name)
+    for source in output.glob('*.png'):archive.write(source,source.name)
+    archive.write(output/'backhere.ico','backhere.ico')

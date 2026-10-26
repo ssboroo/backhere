@@ -20,7 +20,7 @@ from tkinter import filedialog, messagebox
 from core import Store, open_target
 from windows import Hotkey, capture_target, parse_hotkey, set_startup, startup_enabled, SingleInstance, ShowSignal, signal_existing
 
-VERSION = "0.3.0"
+VERSION = "0.4.0"
 
 class App(WorkspaceView):
     def __init__(self, root, testing=False):

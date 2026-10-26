@@ -1,4 +1,4 @@
-# BackHere — Windows Desktop v0.3.0
+# BackHere — Windows Desktop v0.4.0
 
 **Ажлаа яг хаана орхисноо хадгалаад дараа нь шууд үргэлжлүүл.**
 
@@ -6,12 +6,14 @@
 
 ## Татах
 
+**Нийтийн таталт:** [GitHub Releases](https://github.com/ssboroo/backhere/releases/latest). Энд суулгагч, portable ZIP, checksum болон brand kit байна. Нэвтрэх шаардлагагүй.
+
 [Actions → Windows desktop build](https://github.com/ssboroo/backhere/actions) → хамгийн сүүлийн **ногоон** run → **Artifacts**:
 
 | Таны Windows | Artifact | Суулгагч |
 | --- | --- | --- |
-| 64-bit | `BackHere-Windows-x64` | `BackHere-Setup-0.3.0-x64.exe` |
-| 32-bit | `BackHere-Windows-x86` | `BackHere-Setup-0.3.0-x86.exe` |
+| 64-bit | `BackHere-Windows-x64` | `BackHere-Setup-0.4.0-x64.exe` |
+| 32-bit | `BackHere-Windows-x86` | `BackHere-Setup-0.4.0-x86.exe` |
 
 ZIP-ийг задлаад суулгагчийг ажиллуулна. Эсвэл доторх `BackHere.exe`-г шууд ажиллуулна. Python шаардахгүй. `SHA256SUMS.txt` мөн дагалдана. Суулгалт admin эрх шаардахгүй.
 

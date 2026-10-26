@@ -2,6 +2,7 @@
 from functools import lru_cache
 import customtkinter as ctk
 from PIL import Image, ImageDraw
+from brand import draw_brand
 
 COLORS = {
     'background': ('#F4F6F5', '#131A17'),
@@ -41,10 +42,7 @@ def _draw_icon(name, ink):
     def rect(box, radius=4):
         draw.rounded_rectangle(box, radius=radius, outline=ink, width=6)
     if name == 'logo':
-        draw.rounded_rectangle((3, 3, 93, 93), radius=25, fill=ink)
-        white = '#FFFFFF' if ink == '#326C4B' else '#132C1D'
-        draw.arc((25, 24, 73, 73), 35, 300, fill=white, width=8)
-        draw.polygon([(18, 29), (43, 24), (27, 48)], fill=white)
+        return draw_brand(96,ink,'#FFFFFF' if ink=='#326C4B' else '#132C1D')
     elif name in ('bookmark', 'file'):
         line([(24, 81), (24, 15), (72, 15), (72, 81), (48, 63), (24, 81)]) if name == 'bookmark' else line([(24, 81), (24, 15), (58, 15), (75, 32), (75, 81), (24, 81)])
         if name == 'file':

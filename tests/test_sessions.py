@@ -64,6 +64,15 @@ class SessionTests(unittest.TestCase):
   with patch.object(native,'enumerate_windows',return_value=[]),patch.object(native.subprocess,'Popen') as launch:
    self.assertEqual(native.restore_workspace(snapshot,{'w1'},cancel),[])
    result=native.restore_workspace(snapshot,{'w1'});self.assertEqual(result[0]['state'],'failed');launch.assert_not_called()
+ def test_new_app_waits_for_window_before_reporting_success(self):
+  saved=window();snapshot=new_snapshot('Test',[saved]);opened=window(hwnd=999,pid=888,started=777)
+  with patch.object(native,'enumerate_windows',side_effect=[[],[opened]]),patch.object(native.Path,'is_file',return_value=True),patch.object(native.subprocess,'Popen') as launch,patch.object(native,'place_window') as move,patch.object(native.time,'sleep'):
+   result=native.restore_workspace(snapshot,{'w1'})
+   self.assertEqual(result[0]['state'],'opened');launch.assert_called_once_with([saved['exe']],shell=False,close_fds=True);move.assert_called_once_with(999,saved['rect'],1)
+ def test_unconfirmed_launch_is_not_reported_as_opened(self):
+  saved=window();snapshot=new_snapshot('Test',[saved])
+  with patch.object(native,'enumerate_windows',return_value=[]),patch.object(native.Path,'is_file',return_value=True),patch.object(native.subprocess,'Popen'),patch.object(native.time,'monotonic',side_effect=[0,7]):
+   self.assertEqual(native.restore_workspace(snapshot,{'w1'})[0]['state'],'requested')
  def test_hibernate_only_constructs_native_command(self):
   with patch.object(native.os,'name','nt'),patch.object(native,'Path',return_value=__import__('unittest.mock').mock.MagicMock()),patch.object(native.subprocess,'run') as run:
    run.return_value.returncode=0;native.hibernate_windows();self.assertEqual(run.call_args.args[0][-1],'/h')
@@ -76,6 +85,8 @@ class NativeSessionTests(unittest.TestCase):
   try:
    root.title('BackHere native session test');root.geometry('420x260+90+90');root.update()
    records=native.enumerate_windows();saved=next(w for w in records if w['title']=='BackHere native session test')
+   captured=native.capture_workspace('Native capture test')
+   validate_snapshot(captured)
    self.assertTrue(saved['exe'].lower().endswith('.exe'));self.assertGreater(saved['started'],0)
    native.place_window(saved['hwnd'],[150,150,650,500],1);root.update()
    updated=next(w for w in native.enumerate_windows() if w['hwnd']==saved['hwnd'])

@@ -10,7 +10,7 @@ image=draw_brand(1024)
 image.save(output/'backhere.ico',sizes=[(16,16),(24,24),(32,32),(48,48),(64,64),(128,128),(256,256)])
 image.save(output/'backhere-mark.png')
 draw_brand(1024,'#A3DBB4','#132C1D').save(output/'backhere-mark-dark.png')
-with ZipFile(output/'BackHere-Brand-Kit-0.5.0.zip','w',ZIP_DEFLATED) as archive:
+with ZipFile(output/'BackHere-Brand-Kit-0.5.1.zip','w',ZIP_DEFLATED) as archive:
     for source in sorted((root/'brand').iterdir()):
         if source.is_file():archive.write(source,source.name)
     for source in output.glob('*.png'):archive.write(source,source.name)

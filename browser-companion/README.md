@@ -1,4 +1,4 @@
-# BackHere Browser Companion 0.5.0
+# BackHere Browser Companion 0.5.1
 For Chromium browsers (Chrome, Edge, Brave, Vivaldi, Opera). No server, account or host permission.
 
 1. Extract this ZIP to a permanent folder.

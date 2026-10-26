@@ -119,6 +119,8 @@ class Store:
         sessions=data.get('sessions',[]) if data['version']==2 else []
         if not isinstance(sessions,list) or len(sessions)>200:raise ValueError('Invalid workspace backup')
         sessions=[imported_snapshot(s) for s in sessions]
+        existing_sessions={s['id'] for s in self.sessions.all()}
+        if len(existing_sessions | {s['id'] for s in sessions})>200:raise ValueError('Maximum 200 workspaces. Delete old workspaces before importing.')
         before = self.db.total_changes
         with self.db:
             for item in data['items']:

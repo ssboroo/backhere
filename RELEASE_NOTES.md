@@ -1,4 +1,4 @@
-# BackHere 0.5.0 — Workspaces
+# BackHere 0.5.1 — Workspaces
 
 - Save named Windows workspaces with running application windows, sizes, positions, minimized/maximized state and supported file/URL details.
 - Review every window, choose which to restore, cancel between opens, and inspect individual restoration results. Existing windows are preserved; existing matching windows are repositioned without changing their documents/tabs.
@@ -10,8 +10,8 @@
 
 ## Downloads
 
-Windows 10/11 64-bit: `BackHere-Setup-0.5.0-x64.exe`.
-Windows 10 32-bit: `BackHere-Setup-0.5.0-x86.exe`.
+Windows 10/11 64-bit: `BackHere-Setup-0.5.1-x64.exe`.
+Windows 10 32-bit: `BackHere-Setup-0.5.1-x86.exe`.
 Portable ZIPs need no Python installation. SHA256SUMS.txt covers every public artifact.
 
 ## Restoration scope

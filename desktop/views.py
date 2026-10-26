@@ -51,8 +51,11 @@ class WorkspaceView:
             b.pack(fill='x')
             self.nav_buttons[key]=b
         self.text(self.sidebar,self.t('projects'),11,'muted',anchor='w').grid(row=3,column=0,sticky='ew',padx=24,pady=(22,6))
-        self.project_box=ctk.CTkScrollableFrame(self.sidebar,fg_color='transparent',height=120,width=178,scrollbar_button_color=color('border'))
-        self.project_box.grid(row=4,column=0,sticky='ew',padx=12)
+        self.project_container=ctk.CTkFrame(self.sidebar,fg_color='transparent',height=120)
+        self.project_container.grid(row=4,column=0,sticky='ew',padx=12)
+        self.project_container.pack_propagate(False)
+        self.project_box=ctk.CTkScrollableFrame(self.project_container,fg_color='transparent',height=120,width=178,scrollbar_button_color=color('border'))
+        self.project_box.pack(fill='both',expand=True)
         bottom=ctk.CTkFrame(self.sidebar,fg_color='transparent')
         bottom.grid(row=6,column=0,sticky='ew',padx=12,pady=(12,18))
         self.language=ctk.CTkOptionMenu(bottom,values=list(self.locales['names'].values()),command=self.change_language,width=184,height=34,fg_color=color('soft'),button_color=color('soft'),button_hover_color=color('selected'),text_color=color('text'),font=font(12),dropdown_font=font(13),dropdown_fg_color=color('surface'),dropdown_text_color=color('text'))
@@ -61,7 +64,8 @@ class WorkspaceView:
         Button(bottom,kind='ghost',symbol='settings',text=self.t('settings'),anchor='w',height=36,command=self.settings).pack(fill='x')
         self.theme_button=Button(bottom,kind='ghost',symbol='moon',text=self.t('dark') if ctk.get_appearance_mode()=='Light' else self.t('light'),anchor='w',height=36,command=self.toggle_theme)
         self.theme_button.pack(fill='x',pady=(4,0))
-        self.text(bottom,'●  '+self.t('localOnly'),11,'muted',wraplength=174,justify='left',anchor='w').pack(fill='x',padx=12,pady=(20,0))
+        self.privacy_note=self.text(bottom,'●  '+self.t('localOnly'),11,'muted',wraplength=174,justify='left',anchor='w')
+        self.privacy_note.pack(fill='x',padx=12,pady=(16,0))
         self.content=ctk.CTkFrame(self.root,fg_color='transparent',corner_radius=0)
         self.content.grid(row=0,column=1,sticky='nsew',padx=28,pady=24)
         self.content.grid_columnconfigure(0,weight=1)
@@ -124,7 +128,7 @@ class WorkspaceView:
         # Logical rather than physical pixels keeps the breakpoint correct at 125/150% DPI.
         scale=self.root._get_window_scaling()
         logical_width=self.root.winfo_width()/scale
-        self.project_box.configure(height=60 if self.root.winfo_height()/scale<650 else 120)
+        self.project_container.configure(height=60 if self.root.winfo_height()/scale<650 else 120)
         self.apply_layout(logical_width)
 
     def apply_layout(self,logical_width):

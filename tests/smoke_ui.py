@@ -38,7 +38,8 @@ with tempfile.TemporaryDirectory() as folder, ExitStack() as cleanup:
     for mode in ('dark','light','system'):
         app.change_theme(mode);root.update()
         assert app.store.setting('appearance')==mode
-    root.geometry('980x680');root.update();app.update_layout();assert app.compact
+    root.geometry('980x600');root.update();app.update_layout();root.update();assert app.compact
+    assert app.privacy_note.winfo_rooty()+app.privacy_note.winfo_height()<=root.winfo_rooty()+root.winfo_height(), 'Sidebar footer was clipped'
     app.select_item(item['id'],open_detail=True);root.update()
     assert app.detail_dialog_container.winfo_exists()
     app.dialog.destroy()

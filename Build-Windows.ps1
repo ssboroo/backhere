@@ -14,6 +14,6 @@ if ($LASTEXITCODE -ne 0) { throw 'Tests failed' }
 if ($LASTEXITCODE -ne 0) { throw 'UI tests failed' }
 & $python scripts\make-icon.py
 if ($LASTEXITCODE -ne 0) { throw 'Icon generation failed' }
-& $python -m PyInstaller --noconfirm --clean --onefile --windowed --name BackHere --icon build-resources/backhere.ico --add-data 'desktop/locales.json;.' --add-data 'build-resources/backhere.ico;.' --hidden-import pystray._win32 desktop/backhere.py
+& $python -m PyInstaller --noconfirm --clean --onefile --windowed --name BackHere --icon build-resources/backhere.ico --add-data 'desktop/locales.json;.' --add-data 'build-resources/backhere.ico;.' --hidden-import pystray._win32 --collect-all customtkinter --collect-submodules darkdetect desktop/backhere.py
 if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
 Write-Host "Built $Architecture dist\BackHere.exe"

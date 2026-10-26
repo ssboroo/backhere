@@ -1,4 +1,4 @@
-# BackHere — Windows Desktop v0.2.0
+# BackHere — Windows Desktop v0.3.0
 
 **Ажлаа яг хаана орхисноо хадгалаад дараа нь шууд үргэлжлүүл.**
 
@@ -10,8 +10,8 @@
 
 | Таны Windows | Artifact | Суулгагч |
 | --- | --- | --- |
-| 64-bit | `BackHere-Windows-x64` | `BackHere-Setup-0.2.0-x64.exe` |
-| 32-bit | `BackHere-Windows-x86` | `BackHere-Setup-0.2.0-x86.exe` |
+| 64-bit | `BackHere-Windows-x64` | `BackHere-Setup-0.3.0-x64.exe` |
+| 32-bit | `BackHere-Windows-x86` | `BackHere-Setup-0.3.0-x86.exe` |
 
 ZIP-ийг задлаад суулгагчийг ажиллуулна. Эсвэл доторх `BackHere.exe`-г шууд ажиллуулна. Python шаардахгүй. `SHA256SUMS.txt` мөн дагалдана. Суулгалт admin эрх шаардахгүй.
 
@@ -112,3 +112,19 @@ v0.2 нь туршиж ашиглах desktop хувилбар. Доорхийг
 - Суулгагч болон EXE unsigned; SmartScreen анхааруулга гарч болно. Танихгүй нийтлэгчийн анхааруулгыг автоматаар тойрохгүй.
 
 Нэг удаагийн $15–25 борлуулалтад гаргахын өмнө эдгээр үлдсэн шалгалт, signing, лицензийг гүйцээнэ.
+
+## v0.3 — шинэ desktop UI
+
+- Нэгдсэн design tokens: 4/8 px зай хэмжээ, нэг төрлийн line icon, уншихад хялбар typography.
+- Theme-aware **Light / Dark / System**. Сонголтыг дараа нээхэд санана.
+- Тэмдэглэлийн card жагсаалт + сонгосон ажлын **дараагийн алхам** inspector.
+- Нарийн цонхонд inspector нь тусдаа dialog болж нээгдэнэ.
+- Төслөөр шүүх, хайлт/хоосон төлөв, шууд үйлдлийн товчлуурууд.
+- Keyboard focus border, Tab / Enter / Space; Ctrl+N, Ctrl+F, Ctrl+Enter.
+- Editor-ийн алдааг оруулсан талбартай нь хамт харуулна.
+- Settings, тэмдэглэл нэмэх dialog, tray болон 12 хэл нэг UI хэв маягтай.
+- Өмнөх SQLite өгөгдөл, backup, capture болон x64/x86 дэмжлэг хэвээр.
+
+UI screenshots: ногоон Actions run-ийн **BackHere-UI-x64 / x86** artifact. Зураг дахь жишээнүүд нь зөвхөн CI-ийн тусгаарласан туршилтын өгөгдөл; хэрэглэгчийн программд автоматаар нэмэгдэхгүй.
+
+Шалгалт: хоёр theme-ийн үндсэн текст/button contrast ≥4.5:1, 12 хэлээр UI нээх, theme солих, нарийн/өргөн layout, dialog-оос хадгалах, packaged EXE/installer. Энэ нь бүрэн accessibility certification биш; NVDA/JAWS болон high-contrast Windows горимын хараат бус аудит үлдэнэ.

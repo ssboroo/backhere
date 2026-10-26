@@ -1,7 +1,7 @@
 #ifndef TargetArch
 #define TargetArch "x64"
 #endif
-#define AppVersion "0.2.0"
+#define AppVersion "0.3.0"
 [Setup]
 AppId={{18BD80BA-4C74-4E77-9F9E-580980EB038D}
 AppName=BackHere

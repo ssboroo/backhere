@@ -22,18 +22,20 @@ jobs:
           python-version: '3.12'
           architecture: ${{ matrix.architecture }}
           cache: pip
+      - name: Install runtime and packaging dependencies
+        run: python -m pip install -r requirements-build.txt
       - name: Compile and test core, backups, shortcuts and native APIs
         run: |
           python -m compileall -q desktop tests
           python -m unittest discover -s tests -v
-      - name: Install runtime and packaging dependencies
-        run: python -m pip install -r requirements-build.txt
       - name: Desktop UI integration test
+        env:
+          UI_SCREENSHOTS: ui-screenshots
         run: python tests/smoke_ui.py
       - name: Generate application icon
         run: python scripts/make-icon.py
       - name: Build portable executable
-        run: python -m PyInstaller --noconfirm --clean --onefile --windowed --name BackHere --icon build-resources/backhere.ico --add-data "desktop/locales.json;." --add-data "build-resources/backhere.ico;." --hidden-import pystray._win32 desktop/backhere.py
+        run: python -m PyInstaller --noconfirm --clean --onefile --windowed --name BackHere --icon build-resources/backhere.ico --add-data "desktop/locales.json;." --add-data "build-resources/backhere.ico;." --hidden-import pystray._win32 --collect-all customtkinter --collect-submodules darkdetect desktop/backhere.py
       - name: Test actual packaged EXE and architecture
         shell: pwsh
         env:
@@ -80,4 +82,9 @@ jobs:
             dist/BackHere.exe
             installer-output/*.exe
             SHA256SUMS.txt
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BackHere-UI-${{ matrix.architecture }}
+          path: ui-screenshots/*.png
           if-no-files-found: error

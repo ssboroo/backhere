@@ -1,4 +1,4 @@
-# BackHere 0.6.0 — 72-hour trial, offline licensing & 30 language choices
+# BackHere 0.6.1 — 72-hour trial, offline licensing & 30 language choices
 
 - English is the default for new profiles. Existing language preferences are preserved; unknown language codes fall back to English.
 - 30 selectable UI languages with native names. Added Hindi, Bengali, Indonesian, Vietnamese, Thai, Italian, Dutch, Polish, Ukrainian, Persian, Urdu, Swahili, Filipino, Swedish, Romanian, Czech, Greek and Hebrew.

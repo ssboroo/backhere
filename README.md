@@ -156,7 +156,7 @@ For complete browser tab lists, download **BackHere-Browser-Companion-0.5.1.zip*
 
 Workspace snapshots/backups contain plain-text application paths, document names and URLs. JSON imports strip machine-specific window identities. New workspace UI explanations support Mongolian/English; the other existing locales currently fall back to English for this feature.
 
-## Licensing and languages (0.6.0)
+## Licensing and languages (0.6.1)
 
 New profiles start in **English**. Choose from 30 languages in the sidebar; the preference persists. Core labels are translated, while detailed safety/recovery and trial-policy paragraphs retain English outside Mongolian/English until reviewed. Native-language typography, full RTL mirroring and professional translation review remain follow-up QA.
 

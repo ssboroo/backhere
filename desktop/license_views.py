@@ -12,8 +12,10 @@ class LicenseView:
     def require_license(self,quiet=False):
         if self.license.allowed():return True
         if not quiet:
-            if self.dialog and self.dialog.winfo_exists():self.dialog.destroy()
-            self.show_license()
+            if self.dialog and self.dialog.winfo_exists():
+                # Never destroy an editor with unsaved text when the trial ends.
+                messagebox.showinfo(self.t('license'),self.license_summary()+'\n'+self.t('trialInfo'),parent=self.dialog)
+            else:self.show_license()
         return False
     def license_tick(self):
         if self.closing:return

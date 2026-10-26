@@ -1,5 +1,6 @@
 """Desktop UI interaction and layout regression, isolated from real user data."""
 from contextlib import ExitStack
+from unittest.mock import patch
 import os
 import queue
 import sys
@@ -28,6 +29,12 @@ with tempfile.TemporaryDirectory() as folder, ExitStack() as cleanup:
     root.update();assert app.dialog.title()==app.t('license');app.dialog.destroy()
     app.capture_session(automatic=True);assert not app.workspace_capture_busy
     app.license.state['start']=start
+    fields=app.edit();app.editor_note.insert('1.0','Keep this unsaved text')
+    app.license.state['start']=time.time()-TRIAL_SECONDS-1
+    with patch('license_views.messagebox.showinfo'):
+        app.editor_save.invoke()
+    assert app.dialog.winfo_exists() and 'Keep this unsaved text' in app.editor_note.get('1.0','end'), 'Expiry must not destroy unsaved editor'
+    app.dialog.destroy();app.license.state['start']=start
     app.lang='mn';app.build()
     fields=app.edit()
     fields['title'].insert(0,'Монгол — хадгалах туршилт')

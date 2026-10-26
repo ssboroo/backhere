@@ -3,3 +3,5 @@
 .fine-print,.hero-footnote,.eyebrow,.quiet-strip,.number,.section-intro,.mini-file small,.mini-note>span,.chip,.preview-toolbar,.image-caption,footer>div,footer>span{color:#607052}.release-badge,.download-heading p,.recommended,.portable,.download-help,.download-links,.honest-note{color:#596e4e}.recommended.neutral{color:#65745a}.fine-print,.hero-footnote,.image-caption,.download-help,.download-links,.honest-note,footer p,footer>div,footer>span{font-size:11px}.segmented button{color:#657556}.segmented button.active{color:#365b28}
 
 .workspace-screen{max-width:920px;margin:32px auto 20px}.workspace-screen img{display:block;width:100%;height:auto}
+
+.license-screen{max-width:650px;margin:32px auto 20px}.license-screen img{display:block;width:100%;height:auto}

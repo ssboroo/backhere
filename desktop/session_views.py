@@ -16,7 +16,11 @@ class SessionView:
     def show_sessions(self):
         win=self.modal(self.t('sessions'),'920x710')
         if not win:return
-        win.minsize(820,560)
+        scale=win._get_window_scaling()
+        width=min(920,int(win.winfo_screenwidth()/scale)-60)
+        height=min(710,int(win.winfo_screenheight()/scale)-100)
+        win.minsize(min(820,width),min(460,height))
+        win.geometry(f'{width}x{height}+20+30')
         self.session_window=win
         self.session_selected=None
         self.session_checks={}

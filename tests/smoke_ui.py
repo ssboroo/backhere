@@ -58,6 +58,7 @@ with tempfile.TemporaryDirectory() as folder, ExitStack() as cleanup:
         app.lang=code;app.show_sessions();root.update()
         assert app.session_selected==saved_workspace['id']
         assert len(app.session_checks)==1
+        assert app.session_status.winfo_rooty()+app.session_status.winfo_height() <= app.session_window.winfo_rooty()+app.session_window.winfo_height(), 'Workspace footer clipped'
         app.close_sessions();root.update()
     assert not errors,errors
     # Screenshots use synthetic fixtures in this disposable profile, never real user files.

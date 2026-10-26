@@ -100,7 +100,6 @@ class WorkspaceView:
         self.inspector.grid_propagate(False)
         self.status=self.text(self.content,self.t('ready'),11,'muted',anchor='w')
         self.status.grid(row=4,column=0,sticky='ew',pady=(18,0))
-        self.root.bind('<Configure>',self.on_resize)
         self.compact=False
         self.project_filter=getattr(self,'project_filter','')
         self.render()

@@ -72,6 +72,7 @@ class App(WorkspaceView):
         self.hotkey = Hotkey(self.events, self.shortcut) if not testing else None
         self.start_tray()
         root.after(100, self.poll)
+        root.bind('<Configure>', self.on_resize, add='+')
         root.bind('<Control-n>', lambda _: self.edit())
         root.bind('<Control-f>', lambda _: self.search_entry.focus_set())
         root.protocol('WM_DELETE_WINDOW', self.close_window)

@@ -1,3 +1,4 @@
+from contextlib import closing
 import json
 import sys
 import tempfile
@@ -73,7 +74,7 @@ class CoreTests(unittest.TestCase):
         item = self.item()
         backup_dir = self.path / 'snapshots'
         snapshot = self.store.daily_backup(backup_dir)
-        with sqlite3.connect(snapshot) as db:
+        with closing(sqlite3.connect(snapshot)) as db:
             self.assertEqual(db.execute('SELECT note FROM spots').fetchone()[0], item['note'])
         self.store.save({**item, 'note': 'Changed'}, item)
         self.store.restore_snapshot(snapshot, backup_dir)

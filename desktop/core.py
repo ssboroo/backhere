@@ -1,4 +1,5 @@
 """Local data and safe target handling. No network or third-party packages."""
+from contextlib import closing
 import json
 import os
 import sqlite3
@@ -130,7 +131,7 @@ class Store:
         if force or not destination.exists():
             temporary = destination.with_suffix('.tmp')
             try:
-                with sqlite3.connect(temporary) as backup:
+                with closing(sqlite3.connect(temporary)) as backup:
                     self.db.backup(backup)
                     if backup.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
                         raise sqlite3.DatabaseError('Backup validation failed')
@@ -146,7 +147,7 @@ class Store:
         snapshot = Path(snapshot).resolve()
         if snapshot.stat().st_size > 100_000_000:
             raise ValueError('Snapshot too large')
-        with sqlite3.connect(snapshot.as_uri() + '?mode=ro', uri=True) as source:
+        with closing(sqlite3.connect(snapshot.as_uri() + '?mode=ro', uri=True)) as source:
             if source.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
                 raise ValueError('Invalid snapshot')
             source.row_factory = sqlite3.Row

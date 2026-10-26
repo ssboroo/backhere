@@ -1,4 +1,4 @@
-# BackHere — Windows Desktop v0.4.0
+# BackHere — Windows Desktop v0.5.1
 
 **Ажлаа яг хаана орхисноо хадгалаад дараа нь шууд үргэлжлүүл.**
 
@@ -6,14 +6,14 @@
 
 ## Татах
 
-**Нийтийн таталт:** [GitHub Releases](https://github.com/ssboroo/backhere/releases/latest). Энд суулгагч, portable ZIP, checksum болон brand kit байна. Нэвтрэх шаардлагагүй.
+**Нийтийн таталт:** [GitHub Releases](https://github.com/ssboroo/backhere/releases/latest). Энд суулгагч, portable ZIP, checksum, браузерын нэмэлт болон brand kit байна. Нэвтрэх шаардлагагүй.
 
 [Actions → Windows desktop build](https://github.com/ssboroo/backhere/actions) → хамгийн сүүлийн **ногоон** run → **Artifacts**:
 
 | Таны Windows | Artifact | Суулгагч |
 | --- | --- | --- |
-| 64-bit | `BackHere-Windows-x64` | `BackHere-Setup-0.4.0-x64.exe` |
-| 32-bit | `BackHere-Windows-x86` | `BackHere-Setup-0.4.0-x86.exe` |
+| 64-bit | `BackHere-Windows-x64` | `BackHere-Setup-0.5.1-x64.exe` |
+| 32-bit | `BackHere-Windows-x86` | `BackHere-Setup-0.5.1-x86.exe` |
 
 ZIP-ийг задлаад суулгагчийг ажиллуулна. Эсвэл доторх `BackHere.exe`-г шууд ажиллуулна. Python шаардахгүй. `SHA256SUMS.txt` мөн дагалдана. Суулгалт admin эрх шаардахгүй.
 
@@ -136,9 +136,9 @@ UI screenshots: ногоон Actions run-ийн **BackHere-UI-x64 / x86** artifa
 **https://backhere-rainy.ssboroostore.chatgpt.site/**
 
 - Монгол / Англи танилцуулга, бодит аппын зураг, theme preview, FAQ, privacy.
-- Нийтийн GitHub Release v0.4.0-оос x64/x86 суулгагч, portable ZIP, SHA256 болон brand kit татна.
+- Нийтийн GitHub Release v0.5.1-оос x64/x86 суулгагч, portable ZIP, SHA256 болон brand kit татна.
 - Вебийн 375 px болон desktop layout, хэл солих, зураг ачаалах болон checksum таталтыг браузераар шалгасан.
-- Windows release workflow: `40325237474`, хоёр архитектур болон release publication амжилттай.
+- Windows release workflow: `40348892332`, хоёр архитектур болон release publication амжилттай.
 - Том EXE/ZIP таталтын browser completion event-ийг cloud browser-оос баталгаажуулж чадаагүй. Файлуудын release metadata, checksum болон Windows install/run/uninstall CI шалгалт баталгаажсан.
 - Publisher signing, автомат binary updater, төлбөр/лицензийн систем одоогоор байхгүй; жинхэнэ 32-bit төхөөрөмжийн тусдаа QA үлдэнэ.
 

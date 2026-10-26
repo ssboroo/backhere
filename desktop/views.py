@@ -127,6 +127,9 @@ class WorkspaceView:
         # Logical rather than physical pixels keeps the breakpoint correct at 125/150% DPI.
         scale=self.root._get_window_scaling()
         logical_width=self.root.winfo_width()/scale
+        self.apply_layout(logical_width)
+
+    def apply_layout(self,logical_width):
         self.heading.configure(wraplength=max(220,min(440,int(logical_width-460))))
         self.compact=logical_width<1130
         if self.compact:self.inspector.grid_remove()

@@ -230,5 +230,8 @@ def restore_workspace(snapshot,selected_ids,cancel=None,progress=None):
 def hibernate_windows():
     if os.name!='nt':raise OSError('Windows only')
     program=Path(os.environ.get('SystemRoot',r'C:\Windows'))/'System32/shutdown.exe'
-    result=subprocess.run([str(program),'/h'],capture_output=True,timeout=15,creationflags=0x08000000)
+    try:
+        result=subprocess.run([str(program),'/h'],capture_output=True,timeout=15,creationflags=0x08000000)
+    except subprocess.TimeoutExpired as exc:
+        raise OSError('Windows did not confirm hibernation in time') from exc
     if result.returncode:raise OSError((result.stderr or result.stdout).decode(errors='replace').strip() or 'Windows hibernation is unavailable')

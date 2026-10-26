@@ -115,10 +115,10 @@ class Button(ctk.CTkButton):
         self._base_border = options['border_width']
         self._base_border_color = options['border_color']
         self._canvas.configure(takefocus=1)  # pinned CTk adapter; not app-specific code
-        self.bind('<Return>', lambda _: self.invoke())
-        self.bind('<space>', lambda _: self.invoke())
-        self.bind('<FocusIn>', lambda _: self.configure(border_width=2, border_color=color('accent')))
-        self.bind('<FocusOut>', lambda _: self.configure(border_width=self._base_border, border_color=self._base_border_color))
+        self.bind('<Return>', lambda _=None: self.invoke())
+        self.bind('<space>', lambda _=None: self.invoke())
+        self.bind('<FocusIn>', lambda _=None: self.configure(border_width=2, border_color=color('accent')))
+        self.bind('<FocusOut>', lambda _=None: self.configure(border_width=self._base_border, border_color=self._base_border_color))
 
     def state(self, states):
         self.configure(state='disabled' if 'disabled' in states else 'normal')

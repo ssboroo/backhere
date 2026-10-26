@@ -158,9 +158,13 @@ class SessionView:
     def handle_workspace_event(self,kind,value):
         if kind=='workspace_captured':
             self.workspace_capture_busy=False
-            self.store.sessions.save(value)
             automatic=[s for s in self.store.sessions.all() if s.get('automatic')]
-            for old in automatic[20:]:self.store.sessions.delete(old['id'])
+            if value.get('automatic'):
+                for old in automatic[19:]:self.store.sessions.delete(old['id'])
+            try:
+                self.store.sessions.save(value)
+            except (ValueError,sqlite3.Error) as exc:
+                self.handle_workspace_event('workspace_capture_error',str(exc));return
             self.status.configure(text=self.t('saved')+' · '+str(len(value['windows']))+' '+self.t('windows'))
             self.refresh_sessions(value['id'])
         elif kind=='workspace_capture_error':

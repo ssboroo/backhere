@@ -84,6 +84,8 @@ class SessionStore:
 
     def save(self,snapshot):
         validate_snapshot(snapshot)
+        if not self.get(snapshot['id']) and self.db.execute('SELECT count(*) FROM sessions').fetchone()[0]>=200:
+            raise ValueError('Maximum 200 workspaces. Delete an old workspace first.')
         encoded=json.dumps(snapshot,ensure_ascii=False)
         if len(encoded.encode('utf-8'))>8_000_000:raise ValueError('Workspace too large')
         with self.db:self.db.execute('INSERT OR REPLACE INTO sessions VALUES (?,?,?,?)',(snapshot['id'],snapshot['name'],snapshot['created'],encoded))

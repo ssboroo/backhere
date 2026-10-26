@@ -1,5 +1,6 @@
 """Tray callbacks enqueue events; only Tk's main thread changes the UI."""
 import threading
+import logging
 
 
 class Tray:
@@ -16,8 +17,30 @@ class Tray:
             pystray.MenuItem(labels['new'], lambda *_: events.put(('new', None))),
             pystray.MenuItem(labels['exit'], lambda *_: events.put(('exit', None)))
         ))
-        self.thread = threading.Thread(target=self.icon.run, daemon=True)
+        self.ready = threading.Event()
+        self.error = None
+        self.events = events
+        self.thread = threading.Thread(target=self.run, daemon=True)
         self.thread.start()
+
+    def setup(self, icon):
+        try:
+            icon.visible = True
+        except Exception as exc:
+            self.error = str(exc)
+            logging.exception('Tray setup failed')
+            self.events.put(('tray_error', self.error))
+        finally:
+            self.ready.set()
+
+    def run(self):
+        try:
+            self.icon.run(setup=self.setup)
+        except Exception as exc:
+            self.error = str(exc)
+            logging.exception('Tray loop failed')
+            self.ready.set()
+            self.events.put(('tray_error', self.error))
 
     @property
     def visible(self):

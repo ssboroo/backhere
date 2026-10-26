@@ -37,21 +37,21 @@ class WorkspaceView:
         self.sidebar.grid_columnconfigure(0,weight=1)
         self.sidebar.grid_rowconfigure(5,weight=1)
         brand = ctk.CTkFrame(self.sidebar,fg_color='transparent')
-        brand.grid(row=0,column=0,sticky='ew',padx=22,pady=(28,30))
+        brand.grid(row=0,column=0,sticky='ew',padx=22,pady=(24,24))
         self.text(brand,'',image=icon('logo',34,'accent')).pack(side='left')
         self.text(brand,'BackHere',22,bold=True).pack(side='left',padx=10)
-        self.text(self.sidebar,self.t('workspace'),11,'muted',anchor='w').grid(row=1,column=0,sticky='ew',padx=24,pady=(0,10))
+        self.text(self.sidebar,self.t('workspace'),11,'muted',anchor='w').grid(row=1,column=0,sticky='ew',padx=24,pady=(0,6))
         nav = ctk.CTkFrame(self.sidebar,fg_color='transparent')
         nav.grid(row=2,column=0,sticky='ew',padx=12)
         self.nav_buttons={}
         for key,symbol in [('active','bookmark'),('pinned','pin'),('done','check')]:
             row=ctk.CTkFrame(nav,fg_color='transparent')
             row.pack(fill='x',pady=3)
-            b=Button(row,kind='ghost',symbol=symbol,text=self.t(key),height=42,anchor='w',command=lambda k=key:self.set_filter(k))
+            b=Button(row,kind='ghost',symbol=symbol,text=self.t(key),height=40,anchor='w',command=lambda k=key:self.set_filter(k))
             b.pack(fill='x')
             self.nav_buttons[key]=b
-        self.text(self.sidebar,self.t('projects'),11,'muted',anchor='w').grid(row=3,column=0,sticky='ew',padx=24,pady=(30,8))
-        self.project_box=ctk.CTkFrame(self.sidebar,fg_color='transparent')
+        self.text(self.sidebar,self.t('projects'),11,'muted',anchor='w').grid(row=3,column=0,sticky='ew',padx=24,pady=(22,6))
+        self.project_box=ctk.CTkScrollableFrame(self.sidebar,fg_color='transparent',height=120,width=178,scrollbar_button_color=color('border'))
         self.project_box.grid(row=4,column=0,sticky='ew',padx=12)
         bottom=ctk.CTkFrame(self.sidebar,fg_color='transparent')
         bottom.grid(row=6,column=0,sticky='ew',padx=12,pady=(12,18))
@@ -59,8 +59,6 @@ class WorkspaceView:
         self.language.set(self.locales['names'][self.lang])
         self.language.pack(fill='x',padx=4,pady=(0,12))
         Button(bottom,kind='ghost',symbol='settings',text=self.t('settings'),anchor='w',height=36,command=self.settings).pack(fill='x')
-        Button(bottom,kind='ghost',symbol='download',text=self.t('export'),anchor='w',height=36,command=self.export_data).pack(fill='x')
-        Button(bottom,kind='ghost',symbol='upload',text=self.t('import'),anchor='w',height=36,command=self.import_data).pack(fill='x')
         self.theme_button=Button(bottom,kind='ghost',symbol='moon',text=self.t('dark') if ctk.get_appearance_mode()=='Light' else self.t('light'),anchor='w',height=36,command=self.toggle_theme)
         self.theme_button.pack(fill='x',pady=(4,0))
         self.text(bottom,'●  '+self.t('localOnly'),11,'muted',wraplength=174,justify='left',anchor='w').pack(fill='x',padx=12,pady=(20,0))
@@ -81,7 +79,7 @@ class WorkspaceView:
         toolbar.grid_columnconfigure(0,weight=1)
         self.search_entry=ctk.CTkEntry(toolbar,placeholder_text=self.t('search'),height=42,corner_radius=9,border_width=1,border_color=color('border'),fg_color=color('surface'),text_color=color('text'),font=font(13))
         self.search_entry.grid(row=0,column=0,sticky='ew',padx=(0,12))
-        self.search_entry.insert(0,self.search.get())
+        if self.search.get():self.search_entry.insert(0,self.search.get())
         self.search_entry.bind('<KeyRelease>',self.queue_search)
         self.sort_menu=ctk.CTkOptionMenu(toolbar,values=[self.t('newest'),self.t('oldest')],command=self.order,width=156,height=42,fg_color=color('surface'),button_color=color('surface'),button_hover_color=color('soft'),text_color=color('muted'),font=font(12),dropdown_font=font(13),dropdown_fg_color=color('surface'),dropdown_text_color=color('text'))
         self.sort_menu.set(self.t('oldest') if self.sort.get()=='old' else self.t('newest'))
@@ -126,6 +124,7 @@ class WorkspaceView:
         # Logical rather than physical pixels keeps the breakpoint correct at 125/150% DPI.
         scale=self.root._get_window_scaling()
         logical_width=self.root.winfo_width()/scale
+        self.project_box.configure(height=60 if self.root.winfo_height()/scale<650 else 120)
         self.apply_layout(logical_width)
 
     def apply_layout(self,logical_width):
@@ -173,7 +172,8 @@ class WorkspaceView:
     def render(self):
         self.items={i['id']:i for i in self.store.all()}
         if self.search_entry.get()!=self.search.get():
-            self.search_entry.delete(0,'end');self.search_entry.insert(0,self.search.get())
+            self.search_entry.delete(0,'end')
+            if self.search.get():self.search_entry.insert(0,self.search.get())
         query=self.search.get().casefold().strip()
         records=list(self.items.values())
         if self.sort.get()=='old':records.reverse()
@@ -389,7 +389,7 @@ class WorkspaceView:
         shortcut=ctk.CTkEntry(body,height=42,font=font(13),fg_color=color('raised'),border_color=color('border'),text_color=color('text'))
         shortcut.insert(0,self.store.setting('hotkey','Ctrl+Alt+B'));shortcut.pack(fill='x',padx=6)
         self.text(body,'Ctrl+Alt+B  /  Ctrl+Shift+B  /  Alt+Shift+B',11,'muted',anchor='w').pack(fill='x',padx=6,pady=(8,24))
-        for key,symbol,fn in [('backupNow','download',self.backup_now),('restoreBackup','restore',self.restore_backup),('openData','folder',lambda:os.startfile(self.data_dir))]:
+        for key,symbol,fn in [('backupNow','download',self.backup_now),('import','upload',self.import_data),('restoreBackup','restore',self.restore_backup),('openData','folder',lambda:os.startfile(self.data_dir))]:
             Button(body,kind='secondary',symbol=symbol,text=self.t(key),anchor='w',command=fn).pack(fill='x',padx=6,pady=5)
         Button(body,kind='ghost',symbol='exit',text=self.t('exit'),anchor='w',command=self.exit).pack(fill='x',padx=6,pady=(18,5))
         self.text(body,f'BackHere {self.version} · Windows {struct.calcsize("P")*8}-bit',11,'muted',anchor='w').pack(fill='x',padx=6,pady=16)

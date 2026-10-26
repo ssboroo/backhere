@@ -229,6 +229,9 @@ class App(WorkspaceView):
                 self.shortcut = value
                 self.store.set_setting('hotkey', value)
                 self.status.configure(text='Ctrl+N · Ctrl+F · '+value)
+            elif kind == 'tray_error':
+                self.status.configure(text=self.t('error')+' — '+self.t('closeTray'))
+                self.show()
             elif kind == 'show':
                 self.show()
             elif kind == 'new':

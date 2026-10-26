@@ -63,7 +63,7 @@ with tempfile.TemporaryDirectory() as folder, ExitStack() as cleanup:
         for title,target,project,position,note in examples:
             app.store.save(dict(title=title,target=target,project=project,position=position,note=note))
         app.lang='en';app.search.set('');app.selected_id=None;app.build()
-        width=min(1240,max(940,root.winfo_screenwidth()-80));height=min(790,max(620,root.winfo_screenheight()-100))
+        width=min(1240,max(940,root.winfo_screenwidth()-80));height=min(790,max(560,root.winfo_screenheight()-160))
         root.geometry(f'{width}x{height}+20+35')
         root.update();app.update_layout();root.lift()
         for mode in ('light','dark'):
@@ -81,9 +81,9 @@ with tempfile.TemporaryDirectory() as folder, ExitStack() as cleanup:
     if os.name=='nt':
         from tray import Tray
         tray=Tray(queue.Queue(),{k:app.t(k) for k in ('show','new','exit')})
-        deadline=time.monotonic()+5
+        deadline=time.monotonic()+10
         while not tray.visible and time.monotonic()<deadline:root.update();time.sleep(.05)
-        assert tray.visible,'Tray icon did not initialize'
+        assert tray.ready.is_set() and tray.visible,('Tray initialization failed',tray.error,tray.thread.is_alive())
         tray.stop()
     app.exit()
 print('12 locales, editor save, filters, themes, compact detail drawer, wide layout and tray passed.')

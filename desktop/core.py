@@ -29,12 +29,13 @@ def open_target(target, position=''):
     if target_kind(target) == 'url':
         if position.isdecimal():
             target = target.split('#')[0] + '#page=' + position
-        webbrowser.open(target)
+        if not webbrowser.open(target):
+            raise OSError('No default browser is available')
     else:
         # Deliberately never run a shell command or execute executable/script files.
         if not Path(target).exists():
             raise FileNotFoundError(target)
-        if Path(target).suffix.lower() in {'.exe', '.com', '.bat', '.cmd', '.ps1', '.vbs', '.js', '.msi', '.scr', '.lnk', '.url', '.hta', '.wsf', '.reg'}:
+        if Path(target).suffix.lower() in {'.exe', '.com', '.bat', '.cmd', '.ps1', '.vbs', '.js', '.msi', '.scr', '.lnk', '.url', '.hta', '.wsf', '.reg', '.py', '.pyw', '.psm1', '.jse', '.vbe', '.msc', '.cpl', '.appref-ms', '.application', '.sh', '.jar'}:
             raise ValueError('Executable files are not supported as bookmarks')
         os.startfile(target)
 
@@ -42,7 +43,8 @@ def open_target(target, position=''):
 class Store:
     def __init__(self, path):
         Path(path).parent.mkdir(parents=True, exist_ok=True)
-        self.db = sqlite3.connect(path)
+        self.db = sqlite3.connect(path, timeout=10)
+        self.db.execute('PRAGMA busy_timeout=10000')
         self.db.execute('PRAGMA journal_mode=WAL')
         self.db.execute('CREATE TABLE IF NOT EXISTS spots (id TEXT PRIMARY KEY, title TEXT NOT NULL, target TEXT NOT NULL, note TEXT NOT NULL, project TEXT NOT NULL, position TEXT NOT NULL, created REAL NOT NULL, done INTEGER NOT NULL, pinned INTEGER NOT NULL)')
         self.db.execute('CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)')
@@ -118,3 +120,45 @@ class Store:
 
     def close(self):
         self.db.close()
+
+    def daily_backup(self, directory, retention=7, force=False):
+        """SQLite's backup API includes WAL data; rotate only after a successful snapshot."""
+        from datetime import date
+        directory = Path(directory)
+        directory.mkdir(parents=True, exist_ok=True)
+        destination = directory / ('backhere-' + date.today().isoformat() + '.sqlite3')
+        if force or not destination.exists():
+            temporary = destination.with_suffix('.tmp')
+            try:
+                with sqlite3.connect(temporary) as backup:
+                    self.db.backup(backup)
+                    if backup.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
+                        raise sqlite3.DatabaseError('Backup validation failed')
+                temporary.replace(destination)
+            finally:
+                temporary.unlink(missing_ok=True)
+        for old in sorted(directory.glob('backhere-????-??-??.sqlite3'), reverse=True)[retention:]:
+            old.unlink()
+        return destination
+
+    def restore_snapshot(self, snapshot, backup_directory):
+        """Validate first; replace records in one transaction; preserve application settings."""
+        snapshot = Path(snapshot).resolve()
+        if snapshot.stat().st_size > 100_000_000:
+            raise ValueError('Snapshot too large')
+        with sqlite3.connect(snapshot.as_uri() + '?mode=ro', uri=True) as source:
+            if source.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
+                raise ValueError('Invalid snapshot')
+            source.row_factory = sqlite3.Row
+            records = [dict(r) for r in source.execute('SELECT id,title,target,note,project,position,created,done,pinned FROM spots LIMIT 10001')]
+        if len(records) > 10000:
+            raise ValueError('Snapshot too large')
+        for record in records:
+            self.validate(record)
+        directory = Path(backup_directory)
+        directory.mkdir(parents=True, exist_ok=True)
+        self.export(directory / ('before-restore-' + str(time.time_ns()) + '.json'))
+        with self.db:
+            self.db.execute('DELETE FROM spots')
+            for record in records:
+                self.db.execute('INSERT INTO spots VALUES (:id,:title,:target,:note,:project,:position,:created,:done,:pinned)', record)

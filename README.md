@@ -1,81 +1,114 @@
-# BackHere — Windows Desktop
+# BackHere — Windows Desktop v0.2.0
 
-**Ажлаа яг хаана орхисноо хадгалаад, дараа нь шууд үргэлжлүүл.**
+**Ажлаа яг хаана орхисноо хадгалаад дараа нь шууд үргэлжлүүл.**
 
-Windows 10/11 x64-д зориулсан native desktop апп. Вебсайт биш. Бүртгэл, сервер, subscription шаардлагагүй.
+Бүртгэлгүй, локал хадгалалттай Windows desktop программ. Windows 10/11 x64 болон Windows 10 x86 (32-bit)-д зориулсан тусдаа executable, суулгагчтай. x86 binary-г CI дээр 64-bit Windows-ийн WOW64 орчинд шалгана; жинхэнэ 32-bit OS дээрх QA тусдаа шаардлагатай. Windows 7/8 дэмжихгүй.
 
-## Ажиллуулах
+## Татах
 
-### Суулгагч / portable EXE
+[Actions → Windows desktop build](https://github.com/ssboroo/backhere/actions) → хамгийн сүүлийн **ногоон** run → **Artifacts**:
 
-GitHub → **Actions → Windows desktop build → амжилттай run → Artifacts → BackHere-Windows-x64** татаж задлана.
+| Таны Windows | Artifact | Суулгагч |
+| --- | --- | --- |
+| 64-bit | `BackHere-Windows-x64` | `BackHere-Setup-0.2.0-x64.exe` |
+| 32-bit | `BackHere-Windows-x86` | `BackHere-Setup-0.2.0-x86.exe` |
 
-- `BackHere-Setup-0.1.0.exe`: хэрэглэгчийн Programs хавтсанд суулгана, Start Menu/Desktop shortcut үүсгэнэ. Admin эрх шаардахгүй.
-- `BackHere.exe`: Python суулгахгүйгээр шууд ажиллах portable файл. Өгөгдөл нь USB дээр бус, тухайн Windows хэрэглэгчийн AppData-д хадгалагдана.
+ZIP-ийг задлаад суулгагчийг ажиллуулна. Эсвэл доторх `BackHere.exe`-г шууд ажиллуулна. Python шаардахгүй. `SHA256SUMS.txt` мөн дагалдана. Суулгалт admin эрх шаардахгүй.
 
-Эдгээр файлыг Windows CI build амжилттай болсон үед artifact-аас татна. Unsigned build тул Windows SmartScreen анхааруулга гарч болно; release code signing одоогоор хийгдээгүй.
+Windows architecture-аа **Settings → System → About → System type** дээр харна. x64, x86 хувилбар ижил өгөгдөл ашигладаг; зэрэг ажиллуулахгүй. Нэг хувилбараас нөгөөд шилжихдээ BackHere-ээс бүрэн гарч суулгана.
 
-### Source-оос
+## Хэрэглэх
 
-Python 3.12+ (Tcl/Tk, Python launcher-тай) суулгаад **Run-BackHere.bat** давхар дарна. Runtime dependency байхгүй.
+1. BackHere ажиллаж байх үед өөр программ дээр **Ctrl+Alt+B** дарна.
+2. Цонхны гарчиг автоматаар орно. Хаягийг боломжтой үед авна:
+   - **Explorer**: сонгосон файл эсвэл хавтас.
+   - **Chrome, Edge, Firefox, Brave, Vivaldi, Opera**: UI Automation-аар харагдаж буй address талбар. Хувилбар, accessibility дэмжлэгээс хамаарна.
+   - **Word**: foreground цонх COM active window-тэй таарч байвал хадгалсан документын зам, хуудас.
+   - **Excel**: foreground window таарч байвал хадгалсан workbook, sheet/cell.
+3. Автоматаар олдоогүй бол `…` товчоор файл сонгох эсвэл URL-ийг гараар оруулна. Clipboard-ийг унших/солихгүй.
+4. Дараагийн алхмаа бичээд **Ctrl+Enter** дарна.
+5. Тэмдэглэлээ сонгоод **Үргэлжлүүлэх** эсвэл давхар дарахад файл/хуудас нээгдэнэ.
+6. Дуусгах/сэргээх, онцлох, хайх, засах боломжтой.
+
+**Ctrl+N:** шинэ. **Ctrl+F:** хайлт. Хүснэгтийн гарчиг дээр дарахад шинэ/хуучнаар эрэмбэлнэ.
+
+## Тохиргоо, tray
+
+- **Тохиргоо → Windows асахад ажиллуулах**: зөвхөн сонгосон үед хэрэглэгчийн startup registry-д бүртгэнэ.
+- **Хаахад tray хэсэгт үлдээх**: X дарахад background-д үлдэж shortcut ажиллана. Tray icon харагдаж байгаа үед л нуух тул icon алдаа гарвал үл үзэгдэх апп үүсгэхгүй.
+- Tray-ийн menu → Нээх / Шинэ / Гарах. Программаас бүрэн гарахад shortcut зогсоно.
+- Shortcut-оо **Ctrl/Alt/Shift + A–Z эсвэл 0–9** хослолоор өөрчилнө. Давхцал гарвал мэдэгдэнэ, өмнөх shortcut ажиллаж үлдэнэ.
+- Дахин ажиллуулахад шинэ instance нээхийн оронд одоо байгаа цонхыг гаргана.
+
+## Өгөгдөл ба сэргээх
+
+Байршил: `%LOCALAPPDATA%\BackHere`.
+
+- `backhere.sqlite3`: тэмдэглэл, хэл болон аппын тохиргоо.
+- `backups/`: өдөр тус бүрийн SQLite snapshot; сүүлийн 7 өдрийг хадгална. Ажиллаж байх үед минут тутам тухайн өдрийн snapshot-ийг шинэчилж, гарахдаа дахин нөөцөлнө.
+- **Нөөц экспортлох / импортлох**: JSON backup. Импорт одоогийн тэмдэглэлийг устгахгүй, давхардсан ID-г алгасана. Буруу нөөц бүхэлдээ цуцлагдана.
+- **Тохиргоо → Өдөр тутмын нөөцөөс сэргээх**: snapshot-ийг шалгаад, баталгаажуулсны дараа одоогийн тэмдэглэлүүдийг солино. Өмнөх өгөгдлийг эхлээд `before-restore-*.json` болгон хадгална. Аппын тохиргоог хэвээр үлдээнэ.
+- Нөөц гэмтсэн бол одоогийн өгөгдөл солигдохгүй.
+- `backhere.log`: 500 KB × 3 хүртэлх эргэлддэг алдааны log. Дэмжлэг авахдаа алдааг тайлбарлахад ашиглана.
+- Uninstall нь тэмдэглэл/нөөцийг устгахгүй; startup бүртгэлийг цэвэрлэнэ.
+
+Өгөгдөл болон нөөц plaintext; үүлэн сервер рүү явуулахгүй. Төхөөрөмж эвдэрвэл локал snapshot хамт алдагдах тул JSON нөөцөө өөр диск дээр хадгалж болно.
+
+## Хэл
+
+Монгол, English, Español, Français, Deutsch, Русский, 中文, 日本語, 한국어, Português, Türkçe, العربية. Үндсэн UI, Settings болон tray menu орчуулагдсан. Windows-ийн native dialog/error болон зарим техникийн тайлбар OS/англи хэлээр байж болно. Arabic текст болон entry alignment дэмжинэ; бүрэн RTL layout хараахан биш.
+
+## Source-оос ажиллуулах / build
+
+Python 3.12 (Tcl/Tk болон launcher-тай):
 
 ```powershell
+py -3 -m pip install -r requirements.txt
 py -3 desktop\backhere.py
 ```
 
-Өөрөө EXE бүтээх:
+Эсвэл `Run-BackHere.bat` ажиллуулна (эхлээд requirements-ийг суулгана).
+
+Python 3.12 x64 болон x86-г тус тус суулгасан үед:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\Build-Windows.ps1
+.\Build-Windows.ps1 -Architecture x64
+.\Build-Windows.ps1 -Architecture x86
 ```
 
-Эсвэл PowerShell скрипт хэрэглэхгүйгээр:
+Сүүлийн build нь `dist\BackHere.exe`-г шинэчилнэ. Inno Setup 6 compiler:
 
 ```powershell
-py -3 -m pip install -r requirements-build.txt
-py -3 -m PyInstaller --noconfirm --clean --onefile --windowed --name BackHere --add-data "desktop/locales.json;." desktop/backhere.py
+ISCC.exe /DTargetArch=x64 installer.iss
+ISCC.exe /DTargetArch=x86 installer.iss
 ```
 
-Inno Setup 6 ашиглан `installer.iss` compile хийж суулгагч гаргана.
-
-## Үндсэн урсгал
-
-1. Аппыг ажиллуулж, нээлттэй эсвэл minimized байлгана.
-2. Өөр программ дээр **Ctrl+Alt+B** дарна. BackHere нээгдэж одоогийн цонхны гарчгийг оруулна.
-3. File Explorer-т файл сонгосон бол тухайн замыг Shell COM-оор авна. Бусад программын документын зам/браузерын URL-ийг энэ хувилбарт гараар оруулна. `…` товчоор файл сонгож болно.
-4. «Дараа нь хүснэгтийн 3-р баганыг шалга» гэж бичээд **Ctrl+Enter** дарж хадгална.
-5. Жагсаалтаас сонгоод **Үргэлжлүүлэх** эсвэл давхар дарахад файл default программаараа, URL default браузераар нээгдэнэ.
-6. Дууссан ажлаа нэг дараад хаана; Дууссан хэсгээс сэргээж болно.
-
-**Ctrl+N:** шинэ тэмдэглэл. **Ctrl+F:** хайлт. **Ctrl+Alt+B:** бусад цонхноос шинэ тэмдэглэл. Shortcut өөр апптай давхцвал статус дээр мэдэгдэнэ. Апп бүрэн хаалттай үед shortcut ажиллахгүй.
-
-## Боломжууд
-
-- Файл/URL, богино тэмдэглэл, төсөл, байрлал
-- SQLite хадгалалт: `%LOCALAPPDATA%\BackHere\backhere.sqlite3`
-- Хайлт, онцлох, шинэ/хуучнаар эрэмбэлэх (хүснэгтийн гарчиг дээр дарах)
-- Дуусгах, сэргээх; зөвхөн дууссан тэмдэглэлийг баталгаажуулж устгана
-- JSON экспорт/импорт, давхардлыг ID-аар алгасана; буруу нөөц бүхэлдээ цуцлагдана
-- Монгол, English, Español, Français, Deutsch, Русский, 中文, 日本語, 한국어, Português, Türkçe, العربية
-- DPI awareness, цонхны хэмжээнд уян хүснэгт, keyboard navigation
-- Telemetry, analytics, cloud sync, AI API байхгүй
-
-## Одоогийн хязгаар
-
-- v0.1 MVP. Windows дээрх CI build, UI smoke test болон бодит хэрэглэгчийн туршилтаар баталгаажуулна.
-- Браузерын URL/Word/Excel-ийн документын замыг автоматаар танихгүй; гараар оруулна. Explorer сонголт л автоматаар орно.
-- Excel cell, Word page, scroll зэрэг байрлал гараар харах тэмдэглэл байна. Тоон байрлалтай веб PDF-д `#page=N` нэмж өгнө; viewer-ээс хамаарна. Native PDF-ийн яг хуудсыг автоматаар нээхгүй.
-- 12 хэлний үндсэн UI орсон. Windows error text болон зарим техникийн status англи; Arabic нь Unicode дэмжинэ, бүрэн RTL layout хараахан байхгүй. Native speaker review шаардлагатай.
-- Tray icon, Windows startup, auto-update, cloud sync, лиценз/төлбөр болон code signing хараахан байхгүй.
-- SQLite болон экспорт шифрлээгүй. Нөөцөө өөрөө хадгална. Uninstall нь хэрэглэгчийн database-ийг зориуд устгахгүй.
-- Shortcut нэг ажиллаж буй instance-д бүртгэгдэнэ. Давхар ажиллуулбал хоёр дахь instance shortcut зөрчилтэйг мэдээлнэ.
-- Нэг удаагийн $15–25 худалдаанд гаргахын өмнө signing, installer QA, recovery/backup QA, лиценз, accessibility болон locale review гүйцээнэ.
-
-## Шалгалт
+## Баталгаажуулалт
 
 ```powershell
 py -3 -m unittest discover -s tests -v
 py -3 tests\smoke_ui.py
 ```
 
-Core тестүүд хадгалалт/дахин нээх, засвар, дуусгах/сэргээх, backup merge/atomic validation, protocol хамгаалалт, PDF URL, 12 хэлний бүрэн байдлыг шалгана. UI smoke нь Windows CI дээр ажиллана. Native shortcut/Explorer capture-г бодит Windows дээр тусад нь туршина.
+Windows matrix pipeline дараахийг тус бүр x64/x86 дээр шалгана:
+
+- Syntax, хадгалалт, засвар, дуусгах/сэргээх, импортын atomic validation
+- SQLite WAL snapshot, эргэлт, сэргээх, гэмтсэн snapshot-ийн хамгаалалт
+- Shortcut parsing, RegisterHotKey/rebind/collision/shutdown
+- Pointer-size safe HWND, single-instance mutex, hidden window show event
+- 12 хэлний UI, editor-оос хадгалах, хайлт, тохиргоо, real Windows tray backend
+- PyInstaller EXE-ийн GUI/database self-test ба бодит 32/64-bit хэмжээ
+- Суулгагч → installed EXE self-test → uninstall
+- SHA256 checksum болон тусдаа downloadable artifacts
+
+## Үлдсэн бүтээгдэхүүний ажил
+
+v0.2 нь туршиж ашиглах desktop хувилбар. Доорхийг хийгдсэн гэж тооцохгүй:
+
+- Автомат capture нь гуравдагч программын UI/COM-оос хамаарна. Бүх browser/Office хувилбар, олон instance, administrator цонхонд ажиллах баталгаа байхгүй; гараар оруулах боломж үлдэнэ.
+- Excel cell/Word page/scroll нь хадгалсан байрлалын сануулга. Native документыг яг тэр cell/page дээр автоматаар сэргээхгүй. Веб PDF-д тоон байрлалыг `#page=N` болгох нь viewer-ээс хамаарна.
+- Жинхэнэ Windows 10 32-bit төхөөрөмж, олон DPI/display, sleep/resume, antivirus болон Office/browser хувилбаруудын бодит QA.
+- Publisher code signing, auto-update, лиценз/төлбөр, орчуулгын native speaker review.
+- Суулгагч болон EXE unsigned; SmartScreen анхааруулга гарч болно. Танихгүй нийтлэгчийн анхааруулгыг автоматаар тойрохгүй.
+
+Нэг удаагийн $15–25 борлуулалтад гаргахын өмнө эдгээр үлдсэн шалгалт, signing, лицензийг гүйцээнэ.

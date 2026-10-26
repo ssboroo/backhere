@@ -6,3 +6,7 @@ dist/
 installer-output/
 *.spec
 *.sqlite3*
+build-resources/
+SHA256SUMS.txt
+installer-test.log
+.venv-*/

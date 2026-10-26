@@ -2,34 +2,82 @@ name: Windows desktop build
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   windows:
+    name: Windows ${{ matrix.architecture }}
     runs-on: windows-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        architecture: [x64, x86]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Core and localization tests
-        run: python -m unittest discover -s tests -v
-      - name: Desktop UI smoke test
-        run: python tests/smoke_ui.py
-      - name: Install packager
+          architecture: ${{ matrix.architecture }}
+          cache: pip
+      - name: Compile and test core, backups, shortcuts and native APIs
+        run: |
+          python -m compileall -q desktop tests
+          python -m unittest discover -s tests -v
+      - name: Install runtime and packaging dependencies
         run: python -m pip install -r requirements-build.txt
+      - name: Desktop UI integration test
+        run: python tests/smoke_ui.py
+      - name: Generate application icon
+        run: python scripts/make-icon.py
       - name: Build portable executable
-        run: python -m PyInstaller --noconfirm --clean --onefile --windowed --name BackHere --add-data "desktop/locales.json;." desktop/backhere.py
+        run: python -m PyInstaller --noconfirm --clean --onefile --windowed --name BackHere --icon build-resources/backhere.ico --add-data "desktop/locales.json;." --add-data "build-resources/backhere.ico;." --hidden-import pystray._win32 desktop/backhere.py
+      - name: Test actual packaged EXE and architecture
+        shell: pwsh
+        env:
+          TARGET_ARCH: ${{ matrix.architecture }}
+        run: |
+          $report = Join-Path $env:RUNNER_TEMP 'backhere-self-test.json'
+          $p = Start-Process -FilePath '.\dist\BackHere.exe' -ArgumentList @('--self-test', ('"' + $report + '"')) -PassThru
+          if (-not $p.WaitForExit(60000)) { $p.Kill(); throw 'Executable self-test timed out' }
+          if ($p.ExitCode -ne 0) { throw 'Executable self-test failed' }
+          $data = Get-Content $report | ConvertFrom-Json
+          $expected = if ($env:TARGET_ARCH -eq 'x86') { 32 } else { 64 }
+          if (-not $data.ok -or $data.bits -ne $expected) { throw 'Wrong executable architecture or broken package' }
+          $data | ConvertTo-Json
       - name: Install Inno Setup
         run: choco install innosetup --yes --no-progress
       - name: Build installer
         shell: pwsh
-        run: '& "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" installer.iss'
+        run: '& "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" /DTargetArch=${{ matrix.architecture }} installer.iss'
+      - name: Test installer and installed executable
+        shell: pwsh
+        env:
+          TARGET_ARCH: ${{ matrix.architecture }}
+        run: |
+          $installer = Get-ChildItem 'installer-output\*.exe' | Select-Object -First 1
+          $target = Join-Path $env:RUNNER_TEMP 'BackHere-installed'
+          $p = Start-Process $installer.FullName -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-', ('/DIR="' + $target + '"'), '/LOG=installer-test.log') -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw 'Installer failed' }
+          $report = Join-Path $env:RUNNER_TEMP 'backhere-installed-test.json'
+          $p = Start-Process (Join-Path $target 'BackHere.exe') -ArgumentList @('--self-test', ('"' + $report + '"')) -PassThru
+          if (-not $p.WaitForExit(60000)) { $p.Kill(); throw 'Installed application timed out' }
+          if ($p.ExitCode -ne 0 -or -not (Test-Path $report)) { throw 'Installed application failed' }
+          $data = Get-Content $report | ConvertFrom-Json
+          if (-not $data.ok) { throw 'Installed self-test failed' }
+          $p = Start-Process (Join-Path $target 'unins000.exe') -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART') -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw 'Uninstaller failed' }
+      - name: Create SHA256 checksums
+        shell: pwsh
+        run: |
+          Get-FileHash dist\BackHere.exe,installer-output\*.exe -Algorithm SHA256 | ForEach-Object { $_.Hash.ToLower() + '  ' + (Split-Path $_.Path -Leaf) } | Set-Content -Encoding utf8 SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: BackHere-Windows-x64
+          name: BackHere-Windows-${{ matrix.architecture }}
           path: |
             dist/BackHere.exe
-            installer-output/BackHere-Setup-0.1.0.exe
+            installer-output/*.exe
+            SHA256SUMS.txt
           if-no-files-found: error

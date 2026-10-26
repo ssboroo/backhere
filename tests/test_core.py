@@ -68,6 +68,31 @@ class CoreTests(unittest.TestCase):
             open_target('https://example.com/report.pdf#old', '12')
             opener.assert_called_once_with('https://example.com/report.pdf#page=12')
 
+    def test_daily_snapshots_include_wal_data_rotate_and_restore(self):
+        import sqlite3
+        item = self.item()
+        backup_dir = self.path / 'snapshots'
+        snapshot = self.store.daily_backup(backup_dir)
+        with sqlite3.connect(snapshot) as db:
+            self.assertEqual(db.execute('SELECT note FROM spots').fetchone()[0], item['note'])
+        self.store.save({**item, 'note': 'Changed'}, item)
+        self.store.restore_snapshot(snapshot, backup_dir)
+        self.assertEqual(self.store.all()[0]['note'], item['note'])
+        self.assertEqual(len(list(backup_dir.glob('before-restore-*.json'))), 1)
+        for day in range(1, 12):
+            (backup_dir / f'backhere-2020-01-{day:02d}.sqlite3').write_bytes(b'old')
+        self.store.daily_backup(backup_dir, retention=7, force=True)
+        self.assertEqual(len(list(backup_dir.glob('backhere-????-??-??.sqlite3'))), 7)
+
+    def test_invalid_snapshot_preserves_current_data(self):
+        self.item()
+        invalid = self.path / 'broken.sqlite3'
+        invalid.write_bytes(b'not a database')
+        import sqlite3
+        with self.assertRaises(sqlite3.DatabaseError):
+            self.store.restore_snapshot(invalid, self.path / 'backups')
+        self.assertEqual(len(self.store.all()), 1)
+
     def test_all_languages_complete(self):
         data = json.loads((Path(__file__).resolve().parents[1] / 'desktop/locales.json').read_text('utf-8'))
         self.assertEqual(len(data['rows']), 12)

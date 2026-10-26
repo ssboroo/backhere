@@ -81,8 +81,21 @@ with tempfile.TemporaryDirectory() as folder, ExitStack() as cleanup:
     if os.name=='nt':
         from tray import Tray
         tray=Tray(queue.Queue(),{k:app.t(k) for k in ('show','new','exit')})
+        # Run the real Tk dispatcher while native tray/setup threads initialize.
+        # update() alone does not mark Tcl as dispatching cross-thread operations.
+        import gc
+        import faulthandler
+        gc.collect()
         deadline=time.monotonic()+10
-        while not tray.visible and time.monotonic()<deadline:root.update();time.sleep(.05)
+        def check_tray():
+            if tray.ready.is_set() or time.monotonic()>=deadline:
+                root.quit()
+            else:
+                root.after(50,check_tray)
+        root.after(50,check_tray)
+        root.mainloop()
+        if not (tray.ready.is_set() and tray.visible):
+            faulthandler.dump_traceback(file=sys.stdout,all_threads=True)
         assert tray.ready.is_set() and tray.visible,('Tray initialization failed',tray.error,tray.thread.is_alive())
         tray.stop()
     app.exit()

@@ -221,8 +221,9 @@ class WorkspaceView:
         note.grid(row=2,column=0,columnspan=3,sticky='ew',padx=18,pady=(0,13))
         foot=ctk.CTkFrame(card,fg_color='transparent')
         foot.grid(row=3,column=0,columnspan=3,sticky='ew',padx=18,pady=(0,14))
-        date=datetime.fromtimestamp(item['created']).strftime('%d %b')
-        self.text(foot,item['position'] or self.t('document' if kind=='file' else 'webPage'),11,'muted',anchor='w').pack(side='left')
+        try:date=datetime.fromtimestamp(item['created']).strftime('%d %b')
+        except (ValueError,OSError,OverflowError):date='—'
+        self.text(foot,(item['position'][:40]+'…' if len(item['position'])>40 else item['position']) or self.t('document' if kind=='file' else 'webPage'),11,'muted',anchor='w').pack(side='left')
         self.text(foot,date,11,'muted').pack(side='right')
         def select(_=None):self.select_item(item['id'],open_detail=True)
         def bindings(widget):

@@ -14,6 +14,8 @@ import tkinter as tk
 import customtkinter as ctk
 from views import WorkspaceView
 from session_views import SessionView
+from license_views import LicenseView
+from licensing import LicenseManager, WindowsAnchors, MemoryAnchors, device_id
 from design import color
 from datetime import datetime
 from pathlib import Path
@@ -21,9 +23,9 @@ from tkinter import filedialog, messagebox
 from core import Store, open_target
 from windows import Hotkey, capture_target, parse_hotkey, set_startup, startup_enabled, SingleInstance, ShowSignal, signal_existing
 
-VERSION = "0.5.1"
+VERSION = "0.6.0"
 
-class App(WorkspaceView, SessionView):
+class App(WorkspaceView, SessionView, LicenseView):
     def __init__(self, root, testing=False):
         self.version = VERSION
         self.root = root
@@ -48,6 +50,7 @@ class App(WorkspaceView, SessionView):
         base = Path(os.environ.get('LOCALAPPDATA', str(Path.home() / '.local/share'))) / 'BackHere'
         self.data_dir = base
         self.store = Store(base / 'backhere.sqlite3')
+        self.license = LicenseManager(MemoryAnchors() if testing else WindowsAnchors(base), device_id())
         self.root.report_callback_exception = self.report_error
         self.backup_error = None
         try:
@@ -57,9 +60,9 @@ class App(WorkspaceView, SessionView):
             logging.exception('Startup backup failed')
         resource = Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parent))
         self.locales = json.loads((resource / 'locales.json').read_text(encoding='utf-8'))
-        self.lang = self.store.setting('language', 'mn')
+        self.lang = self.store.setting('language', 'en')
         if self.lang not in self.locales['rows']:
-            self.lang = 'mn'
+            self.lang = 'en'
         self.filter = 'active'
         self.search = tk.StringVar()
         self.sort = tk.StringVar(value='new')
@@ -84,6 +87,7 @@ class App(WorkspaceView, SessionView):
             self.status.configure(text=self.t('error')+' — '+self.t('backups'))
         root.after(60000, self.periodic_backup)
         root.after(300000, self.auto_capture_session)
+        root.after(60000, self.license_tick)
 
     def t(self, key):
         try:
@@ -100,6 +104,7 @@ class App(WorkspaceView, SessionView):
                 fields['title'].insert(0, Path(path).name)
 
     def resume(self):
+        if not self.require_license():return
         item = self.selected()
         if item:
             try:
@@ -108,18 +113,21 @@ class App(WorkspaceView, SessionView):
                 messagebox.showerror('BackHere', str(exc), parent=self.root)
 
     def pin(self):
+        if not self.require_license():return
         item = self.selected()
         if item:
             self.store.flag(item['id'], 'pinned', not item['pinned'])
             self.render()
 
     def complete(self):
+        if not self.require_license():return
         item = self.selected()
         if item:
             self.store.flag(item['id'], 'done', not item['done'])
             self.render()
 
     def delete(self):
+        if not self.require_license():return
         item = self.selected()
         if item and item['done'] and messagebox.askyesno('BackHere', self.t('delete')+' — '+item['title']+'?', parent=self.root):
             self.store.delete(item['id'])
@@ -135,6 +143,7 @@ class App(WorkspaceView, SessionView):
                 messagebox.showerror('BackHere', str(exc))
 
     def import_data(self):
+        if not self.require_license():return
         path = filedialog.askopenfilename(filetypes=[('JSON', '*.json')])
         if path:
             try:
@@ -179,6 +188,7 @@ class App(WorkspaceView, SessionView):
                 messagebox.showerror('BackHere', str(exc))
 
     def restore_backup(self):
+        if not self.require_license():return
         path = filedialog.askopenfilename(parent=self.dialog or self.root, initialdir=self.data_dir / 'backups', filetypes=[('BackHere SQLite', '*.sqlite3')])
         if not path:
             return
@@ -275,6 +285,8 @@ def self_test(output):
         root = ctk.CTk()
         app = App(root, testing=True)
         root.update()
+        assert app.lang=='en' and app.license.status()['kind']=='trial'
+        app.show_license(); root.update(); app.dialog.destroy()
         for language in app.locales['rows']:
             app.lang = language
             app.build()
@@ -298,7 +310,7 @@ def self_test(output):
         app.store.daily_backup(Path(folder) / 'snapshots')
         count = len(app.store.all())
         app.exit()
-        Path(output).write_text(json.dumps({'ok': count == 1, 'bits': struct.calcsize('P') * 8, 'version': VERSION, 'languages': 12}), encoding='utf-8')
+        Path(output).write_text(json.dumps({'ok': count == 1, 'bits': struct.calcsize('P') * 8, 'version': VERSION, 'languages': len(app.locales['rows'])}), encoding='utf-8')
 
 
 def main():

@@ -65,8 +65,10 @@ class WorkspaceView:
         Button(bottom,kind='ghost',symbol='settings',text=self.t('settings'),anchor='w',height=36,command=self.settings).pack(fill='x')
         self.theme_button=Button(bottom,kind='ghost',symbol='moon',text=self.t('dark') if ctk.get_appearance_mode()=='Light' else self.t('light'),anchor='w',height=36,command=self.toggle_theme)
         self.theme_button.pack(fill='x',pady=(4,0))
+        self.license_button=Button(bottom,kind='ghost',symbol='shield',text=self.license_summary(),height=32,anchor='w',command=self.show_license)
+        self.license_button.pack(fill='x',pady=(4,0))
         self.privacy_note=self.text(bottom,'●  '+self.t('localOnly'),11,'muted',wraplength=174,justify='left',anchor='w')
-        self.privacy_note.pack(fill='x',padx=12,pady=(16,0))
+        self.privacy_note.pack(fill='x',padx=12,pady=(8,0))
         self.content=ctk.CTkFrame(self.root,fg_color='transparent',corner_radius=0)
         self.content.grid(row=0,column=1,sticky='nsew',padx=28,pady=24)
         self.content.grid_columnconfigure(0,weight=1)
@@ -129,7 +131,7 @@ class WorkspaceView:
         # Logical rather than physical pixels keeps the breakpoint correct at 125/150% DPI.
         scale=self.root._get_window_scaling()
         logical_width=self.root.winfo_width()/scale
-        self.project_container.configure(height=32 if self.root.winfo_height()/scale<650 else 96)
+        self.project_container.configure(height=8 if self.root.winfo_height()/scale<650 else 64)
         self.apply_layout(logical_width)
 
     def apply_layout(self,logical_width):
@@ -337,6 +339,7 @@ class WorkspaceView:
         return win
 
     def edit(self,item=None,capture=None):
+        if not self.require_license():return
         win=self.modal(self.t('edit') if item else self.t('new'),'620x720')
         if not win:return
         win.minsize(520,620)
@@ -351,7 +354,7 @@ class WorkspaceView:
             self.text(content,self.t(key),12,'muted',anchor='w').pack(fill='x',padx=6,pady=(12,6))
             row=ctk.CTkFrame(content,fg_color='transparent');row.pack(fill='x',padx=6)
             if key=='target':Button(row,kind='secondary',symbol='folder',text='',width=42,height=42,command=lambda:self.browse(fields)).pack(side='right',padx=(8,0))
-            entry=ctk.CTkEntry(row,height=42,corner_radius=8,border_width=1,border_color=color('border'),fg_color=color('raised'),text_color=color('text'),font=font(13),justify='right' if self.lang=='ar' else 'left')
+            entry=ctk.CTkEntry(row,height=42,corner_radius=8,border_width=1,border_color=color('border'),fg_color=color('raised'),text_color=color('text'),font=font(13),justify='right' if self.lang in ('ar','fa','ur','he') else 'left')
             entry.insert(0,source.get(key,''));entry.pack(fill='x',expand=True);fields[key]=entry
         self.text(content,self.t('note'),12,'muted',anchor='w').pack(fill='x',padx=6,pady=(16,6))
         self.editor_note=ctk.CTkTextbox(content,height=126,corner_radius=8,border_width=1,border_color=color('border'),fg_color=color('raised'),text_color=color('text'),font=font(14),wrap='word')
@@ -361,6 +364,7 @@ class WorkspaceView:
         self.text(foot,'Ctrl+Enter',11,'muted').pack(side='left')
         Button(foot,text=self.t('cancel'),kind='ghost',width=100,command=win.destroy).pack(side='right',padx=(8,0))
         def save(_=None):
+            if not self.require_license():return
             data={k:e.get().strip() for k,e in fields.items()};data['note']=self.editor_note.get('1.0','end-1c').strip()
             try:self.store.save(data,item)
             except (ValueError,OSError,sqlite3.Error) as exc:self.editor_error.configure(text=str(exc));return
@@ -395,6 +399,7 @@ class WorkspaceView:
         shortcut=ctk.CTkEntry(body,height=42,font=font(13),fg_color=color('raised'),border_color=color('border'),text_color=color('text'))
         shortcut.insert(0,self.store.setting('hotkey','Ctrl+Alt+B'));shortcut.pack(fill='x',padx=6)
         self.text(body,'Ctrl+Alt+B  /  Ctrl+Shift+B  /  Alt+Shift+B',11,'muted',anchor='w').pack(fill='x',padx=6,pady=(8,24))
+        Button(body,kind='secondary',symbol='shield',text=self.t('license'),anchor='w',command=lambda:(win.destroy(),self.show_license())).pack(fill='x',padx=6,pady=5)
         for key,symbol,fn in [('backupNow','download',self.backup_now),('import','upload',self.import_data),('restoreBackup','restore',self.restore_backup),('openData','folder',lambda:os.startfile(self.data_dir))]:
             Button(body,kind='secondary',symbol=symbol,text=self.t(key),anchor='w',command=fn).pack(fill='x',padx=6,pady=5)
         Button(body,kind='ghost',symbol='exit',text=self.t('exit'),anchor='w',command=self.exit).pack(fill='x',padx=6,pady=(18,5))

@@ -17,8 +17,17 @@ with tempfile.TemporaryDirectory() as folder, ExitStack() as cleanup:
     errors=[]
     root.report_callback_exception=lambda *args:errors.append(args)
     root.update()
+    assert app.lang=='en','Fresh profile must default to English'
     for code in app.locales['rows']:
         app.lang=code;app.build();root.update()
+    app.show_license();root.update();assert app.dialog.title()==app.t('license');app.dialog.destroy()
+    # Expired trials keep stored data but block new notes and automatic capture.
+    from licensing import TRIAL_SECONDS
+    start=app.license.state['start'];app.license.state['start']=time.time()-TRIAL_SECONDS-1
+    assert app.edit() is None
+    root.update();assert app.dialog.title()==app.t('license');app.dialog.destroy()
+    app.capture_session(automatic=True);assert not app.workspace_capture_busy
+    app.license.state['start']=start
     app.lang='mn';app.build()
     fields=app.edit()
     fields['title'].insert(0,'Монгол — хадгалах туршилт')
@@ -94,6 +103,11 @@ with tempfile.TemporaryDirectory() as folder, ExitStack() as cleanup:
         w=app.session_window;x,y=w.winfo_rootx(),w.winfo_rooty()
         ImageGrab.grab(bbox=(x,y,x+w.winfo_width(),y+w.winfo_height())).save(destination/'backhere-workspaces.png')
     app.close_sessions();root.update()
+    app.lang='en';app.show_license();root.update()
+    if os.environ.get('UI_SCREENSHOTS'):
+        w=app.dialog;x,y=w.winfo_rootx(),w.winfo_rooty()
+        ImageGrab.grab(bbox=(x,y,x+w.winfo_width(),y+w.winfo_height())).save(destination/'backhere-license.png')
+    app.dialog.destroy();root.update()
     if os.name=='nt':
         from tray import Tray
         tray=Tray(queue.Queue(),{k:app.t(k) for k in ('show','new','exit')})
@@ -115,4 +129,4 @@ with tempfile.TemporaryDirectory() as folder, ExitStack() as cleanup:
         assert tray.ready.is_set() and tray.visible,('Tray initialization failed',tray.error,tray.thread.is_alive())
         tray.stop()
     app.exit()
-print('12 locales, editor save, filters, themes, compact detail drawer, wide layout and tray passed.')
+print('30 locales, editor save, filters, themes, compact detail drawer, wide layout and tray passed.')

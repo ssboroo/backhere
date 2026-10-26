@@ -1,23 +1,12 @@
-# BackHere 0.5.1 — Workspaces
+# BackHere 0.6.0 — 72-hour trial, offline licensing & 30 language choices
 
-- Save named Windows workspaces with running application windows, sizes, positions, minimized/maximized state and supported file/URL details.
-- Review every window, choose which to restore, cancel between opens, and inspect individual restoration results. Existing windows are preserved; existing matching windows are repositioned without changing their documents/tabs.
-- Explorer folder and saved Word/Excel document capture; best-effort active browser URL capture. Unsupported apps retain their executable and window layout.
-- Optional local automatic snapshots every five minutes (latest 20 automatic snapshots retained).
-- Browser Companion ZIP for Chrome/Edge/Brave/Vivaldi/Opera: export regular HTTP/HTTPS tabs, import them into a captured desktop workspace, or restore pinned/active tabs through the companion. Load-unpacked installation instructions are inside the ZIP.
-- Explicitly confirmed Windows Hibernate action for continuing the current Windows memory session, if supported/enabled. Hibernate is not a collection of independently restorable historical RAM snapshots.
-- Workspace data included in JSON backups and SQLite recovery snapshots; legacy note backups still import.
+- English is the default for new profiles. Existing language preferences are preserved; unknown language codes fall back to English.
+- 30 selectable UI languages with native names. Added Hindi, Bengali, Indonesian, Vietnamese, Thai, Italian, Dutch, Polish, Ukrainian, Persian, Urdu, Swahili, Filipino, Swedish, Romanian, Czech, Greek and Hebrew.
+- Primary labels and actions are translated. Detailed recovery/hibernation warnings and the full trial-policy paragraph remain English outside Mongolian/English pending review. RTL text-entry alignment includes Arabic, Persian, Urdu and Hebrew; full mirrored layout and professional native-language QA are not claimed.
+- Free trial lasts 72 hours from first launch of this licensed version, including for existing 0.5.x users. A perpetual license unlocks one Windows user/device.
+- License screen shows remaining trial hours, copyable device ID and a field for signed license keys. Offline activation requires no account/server.
+- Expiry blocks note creation/editing, bookmark launching, imports, snapshot capture/restore and Hibernate. Viewing existing data, language/theme settings, export and backup remain accessible. No user data is deleted.
+- Trial state lives outside the note database in DPAPI-protected profile/registry anchors. Normal uninstall/reinstall or note backup restore does not restart it; large backward clock changes block trial use until corrected. This is a local deterrent, not tamper-proof DRM against OS administrators, complete state deletion, system snapshot rollback or patched open-source builds.
+- App contains only an RSA public verification key. The owner signing key and issuer kit are delivered privately, never in GitHub/release assets. Offline keys cannot be remotely revoked or automatically transferred; the owner manually verifies payment and issues a device-specific key.
 
-## Downloads
-
-Windows 10/11 64-bit: `BackHere-Setup-0.5.1-x64.exe`.
-Windows 10 32-bit: `BackHere-Setup-0.5.1-x86.exe`.
-Portable ZIPs need no Python installation. SHA256SUMS.txt covers every public artifact.
-
-## Restoration scope
-
-Workspace snapshots do **not** capture application RAM, unsaved text, document edits, browser forms/history, terminals, authenticated sessions, or arbitrary application internals. Saved document paths and sheet names are hints; page/cell/cursor restoration is not guaranteed. Supported apps may recover their own content separately. Browser tabs require the companion for complete exported HTTP/HTTPS tab lists; ordinary capture sees at most the visible active URL. Desktop restore does not apply pinned/active flags; companion restore does. Store sensitive URLs/document paths and backup files privately: they are local plain-text data. No cloud sync or account is required.
-
-New workspace UI is translated in Mongolian and English; other existing app locales currently use English for these new explanations. Existing translations remain available.
-
-Executables/installers are unsigned. Code signing, automatic binary updates and paid licensing are not included. x86 CI runs under WOW64; a separate real 32-bit Windows OS test remains necessary. Both build architectures must pass unit/native tests, UI smoke tests, frozen executable tests and installer/uninstaller tests before publishing. Tests never execute Hibernate.
+Windows x64 and x86 installers/portable builds include SHA256 hashes. Publisher signing is still absent; x86 CI uses WOW64, with real 32-bit OS testing still required. Workspace recovery limitations remain unchanged: arbitrary application RAM, unsaved edits, browser forms and exact document positions are not captured. Browser Companion remains a separate local tab-export utility and is not locked by the desktop license. No payment integration or automatic binary updater is included.

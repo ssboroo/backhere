@@ -96,7 +96,7 @@ class CoreTests(unittest.TestCase):
 
     def test_all_languages_complete(self):
         data = json.loads((Path(__file__).resolve().parents[1] / 'desktop/locales.json').read_text('utf-8'))
-        self.assertEqual(len(data['rows']), 12)
+        self.assertEqual(len(data['rows']), 30)
         for code, row in data['rows'].items():
             self.assertEqual(len(row), len(data['keys']), code)
             self.assertTrue(all(isinstance(s, str) and s.strip() for s in row))

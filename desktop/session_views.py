@@ -100,6 +100,7 @@ class SessionView:
         self.session_log.pack(fill='x',pady=(0,12));self.session_log.configure(state='disabled')
 
     def capture_session(self,automatic=False):
+        if not self.require_license(quiet=automatic):return
         if self.workspace_capture_busy or self.workspace_restore_busy:return
         name='Auto '+datetime.now().strftime('%Y-%m-%d %H:%M') if automatic else (self.session_name.get().strip() if getattr(self,'session_window',None) and self.session_window.winfo_exists() else datetime.now().strftime('%Y-%m-%d %H:%M'))
         if not name or len(name)>160:
@@ -120,6 +121,7 @@ class SessionView:
         self.root.after(300000,self.auto_capture_session)
 
     def import_session_tabs(self):
+        if not self.require_license():return
         if self.workspace_restore_busy or self.workspace_capture_busy:return
         snapshot=self.store.sessions.get(self.session_selected) if self.session_selected else None
         if not snapshot:return
@@ -132,6 +134,7 @@ class SessionView:
         except (ValueError,OSError,sqlite3.Error) as exc:messagebox.showerror('BackHere',str(exc),parent=self.session_window)
 
     def restore_session(self):
+        if not self.require_license():return
         if self.workspace_restore_busy or self.workspace_capture_busy:return
         snapshot=self.store.sessions.get(self.session_selected) if self.session_selected else None
         selected={key for key,var in self.session_checks.items() if var.get()}
@@ -152,6 +155,7 @@ class SessionView:
             self.store.sessions.delete(self.session_selected);self.refresh_sessions()
 
     def request_hibernate(self):
+        if not self.require_license():return
         if self.workspace_restore_busy or self.workspace_capture_busy:return
         if not messagebox.askyesno('BackHere',self.t('hibernateConfirm'),parent=getattr(self,'session_window',None) or self.root):return
         try:
